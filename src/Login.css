@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Quicksand', sans-serif;
+}
+
+.login-body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("./assets/bg.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.login-card {
+  width: 450px;
+  max-width: 95%;
+  background: rgba(255,255,255,0.13);
+  border-radius: 17px;
+  backdrop-filter: blur(5px);
+  border: 5px solid rgba(255,255,255,0.1);
+  box-shadow: 0 0 40px rgba(129,236,174,0.6);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-card h3 {
+  font-size: 40px;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.login-card p.desc {
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 18px;
+}
+
+label {
+  margin-top: 18px;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  align-self: flex-start;
+}
+
+input {
+  margin-top: 10px;
+  margin-bottom: 6px;
+  padding: 11px 15px;
+  font-size: 14px;
+  background: rgba(0,0,0,0.22);
+  border: 2px solid #38363654;
+  border-radius: 8px;
+  width: 100%;
+  color: white;
+}
+
+input::placeholder { color: #e5e5e5; }
+
+input:focus {
+  outline: none;
+  box-shadow: 0px 2px 2px #0000002b, 0px 5px 10px #00000036;
+  background: #434343;
+}
+
+.btn-login {
+  margin-top: 22px;
+  width: 100%;
+  background: rgba(0,0,0,0.22);
+  border: 2px solid #38363654;
+  border-radius: 8px;
+  color: #e1e1e1;
+  padding: 10px 15px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-login:hover { background:#629677; }
+
+.error {
+  color: #ffb4b4;
+  margin-top: 6px;
+  font-size: 14px;
+  align-self: flex-start;
+}
+.btn-google {
+  margin-top: 12px;
+  width: 100%;
+  background: #fff;
+  color: #111;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: 700;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.btn-google:hover {
+  background: #f5f5f5;
+}
+
+.google-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+}
+.w-full { width: 100%; }
+.mt-6 { margin-top: 1.5rem; }
+.text-white { color: #fff; }
+.text-sm { font-size: .875rem; }
+.ml-2 { margin-left: .5rem; }
+
+.text-blue-200 { color: #bfdbfe; }
+.text-blue-200:hover { text-decoration: underline; }
