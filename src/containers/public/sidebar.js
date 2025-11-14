@@ -27,15 +27,15 @@ const Sidebar = () => {
         return () => unsubscribe();
     }, [gardenId]);
 
-    // Fetch user email from Firebase
+    // Fetch user name from Firebase
     useEffect(() => {
         const userId = auth.currentUser?.uid; // Lấy userId từ Firebase Auth
         if (!userId) return;
 
-        const emailRef = ref(realtimedb, `users/${userId}/email`);
-        const unsubscribe = onValue(emailRef, (snapshot) => {
-            const email = snapshot.val();
-            setUserEmail(email || 'Không có email');
+        const nameRef = ref(realtimedb, `users/${userId}/displayName`);
+        const unsubscribe = onValue(nameRef, (snapshot) => {
+            const name = snapshot.val();
+            setUserEmail(name || 'Người dùng');
         });
 
         return () => unsubscribe();

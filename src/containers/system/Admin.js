@@ -267,7 +267,7 @@ const AdminPage = () => {
                         <table className="min-w-full">
                             <thead className="bg-gradient-to-r from-green-500 to-teal-600 text-white">
                                 <tr>
-                                    <th className="py-4 px-6 text-left font-semibold">ID</th>
+                                    <th className="py-4 px-6 text-left font-semibold">Tên người dùng</th>
                                     <th className="py-4 px-6 text-left font-semibold">Email</th>
                                     <th className="py-4 px-6 text-left font-semibold">Hành động</th>
                                 </tr>
@@ -277,11 +277,11 @@ const AdminPage = () => {
                                     .filter(([_, user]) => Number(user?.role) !== 1)
                                     .map(([uid, user]) => (
                                         <tr
-                                            key={uid}
+                                            key={user.displayName}
                                             className="border-b hover:bg-green-50 transition duration-200 cursor-pointer"
-                                            onClick={() => viewUserDevices(uid)}
+                                            onClick={() => viewUserDevices(user.displayName)}
                                         >
-                                            <td className="py-4 px-6 text-gray-700">{uid.slice(0, 8)}...</td>
+                                            <td className="py-4 px-6 text-gray-700">{user.displayName.slice(0, 30)}</td>
                                             <td className="py-4 px-6 text-gray-700">{user.email}</td>
                                             <td className="py-4 px-6">
                                                 <button
