@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { AddDevice, Home, Login, DeviceId, DeviceList, Register, Chatbot, MapScreen, Overview } from './containers/public';
+import { AddDevice, Home, Login, DeviceId, DeviceList, Register, Chatbot, MapScreen, Overview, EditProfile } from './containers/public';
 import { AdminPage, DeviceDetail } from './containers/system';
 import { path } from './untils/constant';
 
@@ -19,6 +19,8 @@ function App() {
           <Route path={path.CHATBOT} element={<Chatbot />} />
           <Route path={path.MAP} element={<MapScreen />} />
           <Route path={path.OVERVIEW} element={<Overview />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+
         </Route>
 
         <Route path={path.ADMIN} element={<AdminPage />} />

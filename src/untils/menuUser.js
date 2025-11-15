@@ -1,6 +1,6 @@
 import icons from './icon'
 
-const { ImPencil2, MdOutlineLibraryBooks, RiRobot3Line} = icons
+const { ImPencil2, MdOutlineLibraryBooks, RiRobot3Line, FaUserEdit} = icons
 
 const menuUser = [
     {
@@ -20,6 +20,12 @@ const menuUser = [
         text: 'Chatbot',
         path: '/chatbot',
         icon: <RiRobot3Line />
+    },
+    {
+        id: 4,
+        text: 'Chỉnh sửa thông tin',
+        path: '/edit-profile',
+        icon: <FaUserEdit />
     },
 
 ]

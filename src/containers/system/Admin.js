@@ -4,6 +4,7 @@ import { realtimedb } from "../../firebaseConfig";
 import { auth } from "../../firebaseConfig";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import Swal from 'sweetalert2';
 import a from "../../assets/1.jpg"; // Device image
 
 const AdminPage = () => {
@@ -133,8 +134,21 @@ const AdminPage = () => {
         setFormData({});
     };
 
-    const deleteUser = (userId) => {
+    const deleteUser = async (userId) => {
+        const result = await Swal.fire({
+            title: 'Bạn có chắc chắn muốn xóa người dùng này không?',
+            text: "Bạn sẽ không thể hoàn tác hành động này!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Xác nhận',
+            cancelButtonText: 'Hủy'
+        });
+        if (result.isConfirmed) {
         remove(ref(realtimedb, `users/${userId}`));
+        Swal.fire('Thành công!', 'Xóa người dùng thành công', 'success');
+        }
     };
 
     const handleDeleteDevice = (deviceId, userId) => {

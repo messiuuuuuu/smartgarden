@@ -6,42 +6,54 @@ import { NavLink, useNavigate, useParams } from 'react-router-dom';
 import { AiOutlineLogout } from 'react-icons/ai';
 import { ref, onValue } from 'firebase/database';
 import { realtimedb, auth } from '../../firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const Sidebar = () => {
     const navigate = useNavigate();
     const { currentData } = useSelector((state) => state.user);
     const { gardenId } = useParams();
     const [gardenName, setGardenName] = useState('');
-    const [userName, setUserName] = useState(''); // State mới để lưu email
+    const [userName, setUserName] = useState('Người dùng');
+    const [avatarUrl, setAvatarUrl] = useState('');
 
-    // Fetch garden name from Firebase
     useEffect(() => {
-        if (!gardenId) return;
-
-        const nameRef = ref(realtimedb, `gardens/${gardenId}/name`);
-        const unsubscribe = onValue(nameRef, (snapshot) => {
-            const name = snapshot.val();
-            setGardenName(name || 'Khu vườn chưa có tên');
-        });
-
-        return () => unsubscribe();
+        if (gardenId) {
+            const nameRef = ref(realtimedb, `gardens/${gardenId}/name`);
+            const unsubscribe = onValue(nameRef, (snapshot) => {
+                const name = snapshot.val();
+                setGardenName(name || 'Khu vườn chưa có tên');
+            });
+            return () => unsubscribe();
+        }
     }, [gardenId]);
 
-    // Fetch user name from Firebase
     useEffect(() => {
-        const userId = auth.currentUser?.uid; // Lấy userId từ Firebase Auth
-        if (!userId) return;
-
-        const nameRef = ref(realtimedb, `users/${userId}/displayName`);
-        const unsubscribe = onValue(nameRef, (snapshot) => {
-            const userName = snapshot.val();
-            setUserName(userName || 'Người dùng');
+        const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const userId = user.uid;
+                const nameRef = ref(realtimedb, `users/${userId}/displayName`);
+                const avatarRef = ref(realtimedb, `users/${userId}/avatar`);
+                const unsubscribeAvatar = onValue(avatarRef, (snapshot) => {
+                    const avatar = snapshot.val();
+                    setAvatarUrl(avatar || anonAvatar);
+                });
+                const unsubscribeDB = onValue(nameRef, (snapshot) => {
+                    const name = snapshot.val();
+                    setUserName(name || 'Người dùng');
+                });
+                return () => {
+                    unsubscribeDB();
+                    unsubscribeAvatar();
+                };
+            } else {
+                setUserName('Người dùng');
+                setAvatarUrl(anonAvatar);
+            }
         });
 
-        return () => unsubscribe();
+        return () => unsubscribeAuth();
     }, []);
 
-    // Handle logout
     const handleLogout = () => {
         localStorage.removeItem('token');
         navigate('/');
@@ -49,15 +61,14 @@ const Sidebar = () => {
 
     return (
         <div className="w-[300px] h-screen bg-white shadow-2xl rounded-2xl p-6 flex flex-col items-center">
-            {/* User Info */}
             <div className="w-full flex flex-col items-center mb-8">
                 <img
-                    src={currentData?.avatar || anonAvatar}
+                    src={avatarUrl || anonAvatar}
                     alt="avatar"
                     className="w-24 h-24 rounded-full border-4 border-green-200 shadow-md object-cover transition-transform duration-300 hover:scale-105"
                 />
                 <h2 className="mt-4 text-xl font-bold text-green-700">
-                    {userName || currentData?.userName || 'Người dùng'} {/* Hiển thị tên */}
+                    {userName}
                 </h2>
                 {gardenId && (
                     <p className="text-green-600 text-sm mt-2 italic">
@@ -66,7 +77,6 @@ const Sidebar = () => {
                 )}
             </div>
 
-            {/* Menu */}
             <nav className="w-full flex flex-col gap-3">
                 {menuUser.map((item) => (
                     <NavLink

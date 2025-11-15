@@ -7,3 +7,4 @@ export { default as Register } from './Register';
 export { default as Chatbot } from './Chatbot';
 export { default as MapScreen } from './Map';
 export { default as Overview } from './Overview';
+export { default as EditProfile } from './EditProfile';

@@ -18,8 +18,11 @@ import { RiRobot3Line } from "react-icons/ri";
 import { TiWeatherPartlySunny } from "react-icons/ti";
 import { GrMap } from "react-icons/gr";
 import { IoWaterOutline } from "react-icons/io5";
+import { FaUserEdit } from 'react-icons/fa';
+
 
 const icons = {
+    FaUserEdit,
     TiWeatherPartlySunny,
     GrMap,
     RiRobot3Line,
