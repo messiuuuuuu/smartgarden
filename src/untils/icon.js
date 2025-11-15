@@ -17,6 +17,7 @@ import { SiZalo } from 'react-icons/si'
 import { RiRobot3Line } from "react-icons/ri";
 import { TiWeatherPartlySunny } from "react-icons/ti";
 import { GrMap } from "react-icons/gr";
+import { IoWaterOutline } from "react-icons/io5";
 
 const icons = {
     TiWeatherPartlySunny,
@@ -48,7 +49,8 @@ const icons = {
     BsStopwatch,
     BsDot,
     BsTelephoneFill,
-    SiZalo
+    SiZalo,
+    IoWaterOutline
 }
 
 export default icons

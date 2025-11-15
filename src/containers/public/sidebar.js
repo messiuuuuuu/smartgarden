@@ -12,7 +12,7 @@ const Sidebar = () => {
     const { currentData } = useSelector((state) => state.user);
     const { gardenId } = useParams();
     const [gardenName, setGardenName] = useState('');
-    const [userEmail, setUserEmail] = useState(''); // State mới để lưu email
+    const [userName, setUserName] = useState(''); // State mới để lưu email
 
     // Fetch garden name from Firebase
     useEffect(() => {
@@ -34,8 +34,8 @@ const Sidebar = () => {
 
         const nameRef = ref(realtimedb, `users/${userId}/displayName`);
         const unsubscribe = onValue(nameRef, (snapshot) => {
-            const name = snapshot.val();
-            setUserEmail(name || 'Người dùng');
+            const userName = snapshot.val();
+            setUserName(userName || 'Người dùng');
         });
 
         return () => unsubscribe();
@@ -57,7 +57,7 @@ const Sidebar = () => {
                     className="w-24 h-24 rounded-full border-4 border-green-200 shadow-md object-cover transition-transform duration-300 hover:scale-105"
                 />
                 <h2 className="mt-4 text-xl font-bold text-green-700">
-                    {userEmail || currentData?.email || 'Người dùng'} {/* Hiển thị email */}
+                    {userName || currentData?.userName || 'Người dùng'} {/* Hiển thị tên */}
                 </h2>
                 {gardenId && (
                     <p className="text-green-600 text-sm mt-2 italic">
