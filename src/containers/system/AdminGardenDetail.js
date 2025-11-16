@@ -11,8 +11,7 @@ const AdminDeviceDetail = () => {
     const [pumpStatus, setPumpStatus] = useState('');
     const [historyData, setHistoryData] = useState([]);
     const [deviceName, setDeviceName] = useState('');
-    const [minMoisture, setMinMoisture] = useState('');
-    const [maxMoisture, setMaxMoisture] = useState('');
+    const [setMoisture, setSetMoisture] = useState('');
     const [time, setTime] = useState('');
     const [ownerEmail, setOwnerEmail] = useState('Chưa gán');
     const [keys, setKeys] = useState({});
@@ -38,8 +37,7 @@ const AdminDeviceDetail = () => {
                 setNewDeviceName(data.name || '');
                 setSoilMoisture(data.doAmDat?.current || 0);
                 setPumpStatus(data.mayBom?.trangThai || '');
-                setMinMoisture(data.doAmDat?.min || '');
-                setMaxMoisture(data.doAmDat?.max || '');
+                setSetMoisture(data.doAmDat?.set || '');
                 setTime(data.time || '');
 
                 const history = data.doAmDat?.history;
@@ -91,19 +89,11 @@ const AdminDeviceDetail = () => {
         setEditingName(false);
     };
 
-    const handleMinMoistureChange = (e) => {
-        const newMin = parseInt(e.target.value, 10);
-        if (!isNaN(newMin)) {
-            setMinMoisture(newMin);
-            set(ref(realtimedb, `devices/${deviceId}/doAmDat/min`), newMin);
-        }
-    };
-
-    const handleMaxMoistureChange = (e) => {
-        const newMax = parseInt(e.target.value, 10);
-        if (!isNaN(newMax)) {
-            setMaxMoisture(newMax);
-            set(ref(realtimedb, `devices/${deviceId}/doAmDat/max`), newMax);
+    const handleSetMoistureChange = (e) => {
+        const newSet = parseInt(e.target.value, 10);
+        if (!isNaN(newSet)) {
+            setSetMoisture(newSet);
+            set(ref(realtimedb, `devices/${deviceId}/doAmDat/set`), newSet);
         }
     };
 
@@ -228,28 +218,18 @@ const AdminDeviceDetail = () => {
                         </p>
                     </div>
 
-                    {/* Moisture Limits */}
+                    {/* Moisture Threshold */}
                     <div className="p-4 bg-green-50 rounded-lg shadow-sm">
-                        <h2 className="text-xl font-semibold text-green-700 mb-4">Giới hạn độ ẩm</h2>
-                        <div className="grid grid-cols-2 gap-4">
+                        <h2 className="text-xl font-semibold text-green-700 mb-4">Ngưỡng độ ẩm</h2>
+                        <div className="grid grid-cols-1 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Min</label>
+                                <label className="block text-sm font-medium text-gray-700">Ngưỡng độ ẩm</label>
                                 <input
                                     type="number"
-                                    value={minMoisture}
-                                    onChange={handleMinMoistureChange}
+                                    value={setMoisture}
+                                    onChange={handleSetMoistureChange}
                                     className="w-full px-4 py-2 mt-1 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
-                                    placeholder="Nhập giá trị min"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Max</label>
-                                <input
-                                    type="number"
-                                    value={maxMoisture}
-                                    onChange={handleMaxMoistureChange}
-                                    className="w-full px-4 py-2 mt-1 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
-                                    placeholder="Nhập giá trị max"
+                                    placeholder="Nhập ngưỡng độ ẩm"
                                 />
                             </div>
                         </div>

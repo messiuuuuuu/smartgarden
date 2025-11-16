@@ -114,10 +114,7 @@ const GroupOverview = () => {
                                     Độ ẩm hiện tại: <span className="text-teal-700 font-medium">{device.doAmDat?.current ?? 'N/A'}%</span>
                                 </p>
                                 <p className="text-gray-600 mb-2">
-                                    Độ ẩm tối đa: <span className="text-teal-700 font-medium">{device.doAmDat?.max ?? 'N/A'}%</span>
-                                </p>
-                                <p className="text-gray-600 mb-2">
-                                    Độ ẩm tối thiểu: <span className="text-teal-700 font-medium">{device.doAmDat?.min ?? 'N/A'}%</span>
+                                    Ngưỡng độ ẩm: <span className="text-teal-700 font-medium">{device.doAmDat?.set ?? 'N/A'}%</span>
                                 </p>
                                 <p className="text-gray-600 mb-2">
                                     Thời gian gửi dữ liệu: <span className="text-teal-700 font-medium">{getLatestTimestamp(device.doAmDat?.history)}</span>

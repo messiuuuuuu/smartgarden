@@ -117,8 +117,7 @@ const AdminPage = () => {
                         value: formData.currentHumidity || 50,
                     },
                 },
-                max: formData.maxHumidity || 95,
-                min: formData.minHumidity || 70,
+                set: formData.setHumidity || 60,
             },
             mayBom: {
                 trangThai: "Tắt",
@@ -561,17 +560,10 @@ const AdminPage = () => {
                             />
                             <input
                                 type="number"
-                                placeholder="Độ ẩm tối đa"
+                                placeholder="Ngưỡng độ ẩm"
                                 className="w-full p-3 mb-4 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-200 bg-gray-50"
-                                value={formData.maxHumidity || ""}
-                                onChange={(e) => setFormData({ ...formData, maxHumidity: parseInt(e.target.value) })}
-                            />
-                            <input
-                                type="number"
-                                placeholder="Độ ẩm tối thiểu"
-                                className="w-full p-3 mb-4 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-200 bg-gray-50"
-                                value={formData.minHumidity || ""}
-                                onChange={(e) => setFormData({ ...formData, minHumidity: parseInt(e.target.value) })}
+                                value={formData.setHumidity || ""}
+                                onChange={(e) => setFormData({ ...formData, setHumidity: parseInt(e.target.value) })}
                             />
                             <input
                                 type="number"

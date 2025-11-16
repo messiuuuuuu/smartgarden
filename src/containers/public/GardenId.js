@@ -11,8 +11,7 @@ const DeviceId = () => {
     const [pumpStatus, setPumpStatus] = useState(0);
     const [historyData, setHistoryData] = useState([]);
     const [deviceName, setDeviceName] = useState('');
-    const [minMoisture, setMinMoisture] = useState('');
-    const [maxMoisture, setMaxMoisture] = useState('');
+    const [setMoisture, setSetMoisture] = useState('');
     const [time, setTime] = useState('');
     const navigate = useNavigate();
     const [editingName, setEditingName] = useState(false);
@@ -26,8 +25,7 @@ const DeviceId = () => {
         const pumpStatusRef = ref(realtimedb, `devices/${deviceId}/mayBom/trangThai`);
         const historyRef = ref(realtimedb, `devices/${deviceId}/doAmDat/history`);
         const nameRef = ref(realtimedb, `devices/${deviceId}/name`);
-        const minRef = ref(realtimedb, `devices/${deviceId}/doAmDat/min`);
-        const maxRef = ref(realtimedb, `devices/${deviceId}/doAmDat/max`);
+        const setRef = ref(realtimedb, `devices/${deviceId}/doAmDat/set`);
         const timeRef = ref(realtimedb, `devices/${deviceId}/time`);
 
         onValue(nameRef, (snapshot) => {
@@ -47,8 +45,7 @@ const DeviceId = () => {
                 setHistoryData(historyArray);
             }
         });
-        onValue(minRef, (snapshot) => setMinMoisture(snapshot.val() || ''));
-        onValue(maxRef, (snapshot) => setMaxMoisture(snapshot.val() || ''));
+        onValue(setRef, (snapshot) => setSetMoisture(snapshot.val() || ''));
         onValue(timeRef, (snapshot) => setTime(snapshot.val() || ''));
     }, [deviceId]);
 
@@ -96,19 +93,11 @@ const DeviceId = () => {
         setShowDeleteModal(false);
     };
 
-    const handleMinMoistureChange = (e) => {
-        const newMin = parseInt(e.target.value, 10);
-        if (!isNaN(newMin)) {
-            setMinMoisture(newMin);
-            set(ref(realtimedb, `devices/${deviceId}/doAmDat/min`), newMin);
-        }
-    };
-
-    const handleMaxMoistureChange = (e) => {
-        const newMax = parseInt(e.target.value, 10);
-        if (!isNaN(newMax)) {
-            setMaxMoisture(newMax);
-            set(ref(realtimedb, `devices/${deviceId}/doAmDat/max`), newMax);
+    const handleSetMoistureChange = (e) => {
+        const newSet = parseInt(e.target.value, 10);
+        if (!isNaN(newSet)) {
+            setSetMoisture(newSet);
+            set(ref(realtimedb, `devices/${deviceId}/doAmDat/set`), newSet);
         }
     };
 
@@ -137,15 +126,13 @@ const DeviceId = () => {
                 <div className="space-y-8">
                     <MoistureControl
                         soilMoisture={soilMoisture}
-                        minMoisture={minMoisture}
-                        maxMoisture={maxMoisture}
-                        handleMinMoistureChange={handleMinMoistureChange}
-                        handleMaxMoistureChange={handleMaxMoistureChange}
+                        setMoisture={setMoisture}
+                        handleSetMoistureChange={handleSetMoistureChange}
                     />
 
                     <Settings time={time} handleTimeChange={handleTimeChange} />
 
-                    <PumpControl pumpStatus={pumpStatus} handlePumpControl={handlePumpControl} />
+                    <PumpControl pumpStatus={pumpStatus} handlePumpControl={handlePumpControl} soilMoisture={soilMoisture} setMoisture={setMoisture} />
 
                     <HistoryChart historyData={historyData} />
 

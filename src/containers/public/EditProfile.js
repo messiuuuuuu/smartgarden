@@ -106,12 +106,14 @@ const EditProfile = () => {
                         id="avatar-upload"
                         className="hidden"
                     />
-                    <label
-                        htmlFor="avatar-upload"
-                        className="cursor-pointer bg-green-600 text-center px-10 py-2 rounded-lg hover:bg-green-700 transition"
-                    >
-                        Thay đổi ảnh đại diện
-                    </label>
+                    <div className="w-full flex justify-center">
+                        <label
+                            htmlFor="avatar-upload"
+                            className="cursor-pointer bg-green-600 text-center px-10 py-2 rounded-lg hover:bg-green-700 transition"
+                        >
+                            Thay đổi ảnh đại diện
+                        </label>
+                    </div>
                 </div>
                 <div className="mb-6">
                     <label htmlFor="displayName" className="block text-lg font-medium text-gray-700 mb-2">Tên người dùng</label>
