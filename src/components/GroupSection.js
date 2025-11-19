@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AddDevice from './AddDevice';
 import DeviceCard from './DeviceCard';
+import Swal from 'sweetalert2';
 
 const GroupSection = ({ group, groupId, devices, groups, onAddDeviceToGroup, onDeleteGroup, onRemoveDeviceFromGroup, handleRenameGroup }) => {
     const [showAddForm, setShowAddForm] = useState(false);
@@ -58,7 +59,20 @@ const GroupSection = ({ group, groupId, devices, groups, onAddDeviceToGroup, onD
                         Đổi Tên Nhóm
                     </button>
                     <button
-                        onClick={() => onDeleteGroup(groupId)}
+                        onClick={() => Swal.fire({
+                            title: 'Bạn có chắc chắn muốn xóa nhóm này?',
+                            text: "Hành động này không thể hoàn tác!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Xóa Nhóm',
+                            cancelButtonText: 'Hủy'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                onDeleteGroup(groupId);
+                            }
+                        })}
                         className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600 transition-all duration-300 flex items-center gap-2"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
