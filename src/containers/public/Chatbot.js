@@ -3,6 +3,7 @@ import { FaLeaf, FaImage } from "react-icons/fa";
 import { GoogleGenerativeAI} from "@google/generative-ai";
 import Markdown from 'react-markdown';
 import botAvatar from '../../assets/bot-avatar.png'; 
+import { Loading } from "../../components";
 
 const fileToBase64 = (file) => {
   return new Promise((resolve, reject) => {
@@ -15,7 +16,7 @@ const fileToBase64 = (file) => {
 
 const Chatbot = () => {
   const [messages, setMessages] = useState([
-    { text: "Xin chào! Tôi là trợ lý vườn thông minh. Hãy tải ảnh cây của bạn để tôi để nhận diện hoặc chẩn đoán bệnh nhé!", sender: "bot" },
+    { text: <Markdown>Xin chào! Tôi là trợ lý vườn thông minh. Hãy tải ảnh cây của bạn để tôi để nhận diện hoặc chẩn đoán bệnh nhé!</Markdown>, sender: "bot" },
   ]);
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -34,24 +35,16 @@ const Chatbot = () => {
     } else {
       setMessages((prev) => [
         ...prev,
-        { text: "⚠️ Vui lòng chọn file ảnh hợp lệ!", sender: "bot" },
+        { text: <Markdown> Vui lòng chọn file ảnh hợp lệ!</Markdown>, sender: "bot" },
       ]);
     }
   };
 
   const handlePlantIdentification = async (file, isDiagnosis) => {
-    if (!file) {
-      setMessages((prev) => [
-        ...prev,
-        { text: "Vui lòng tải ảnh trước khi thực hiện!", sender: "bot" },
-      ]);
-      return;
-    }
-
     if (!GEMINI_API_KEY) {
         setMessages((prev) => [
             ...prev,
-            { text: "⚠️ Vui lòng cung cấp API key cho Gemini!", sender: "bot" },
+            { text: <Markdown> Vui lòng cung cấp API key cho Gemini!</Markdown>, sender: "bot" },
         ]);
         return;
     }
@@ -95,13 +88,24 @@ const Chatbot = () => {
         error.message || "Không thể kết nối đến server. Vui lòng kiểm tra mạng!";
       setMessages((prev) => [
         ...prev,
-        { text: `⚠️ Lỗi: ${errorMessage}. Vui lòng thử lại!`, sender: "bot" },
+        { text: <Markdown> Lỗi: ${errorMessage}. Vui lòng thử lại!</Markdown>, sender: "bot" },
       ]);
       console.error("Gemini API error:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleButtonClick = (isDiagnosis) => {
+    if (!image) {
+      setMessages((prev) => [
+        ...prev,
+        { text: <Markdown>Vui lòng tải ảnh trước khi thực hiện!</Markdown>, sender: "bot" },
+      ]);
+      return;
+    }
+    handlePlantIdentification(image, isDiagnosis);
+  }
 
   return (
     <div className="flex flex-col h-screen bg-green-50">
@@ -140,7 +144,7 @@ const Chatbot = () => {
         {loading && (
           <div className="flex justify-center">
             <span className="text-gray-600 text-base animate-pulse">
-              ⏳ Đang xử lý...
+              <Loading/> Trợ lý thông minh đang xử lý...
             </span>
           </div>
         )}
@@ -161,15 +165,15 @@ const Chatbot = () => {
         </label>
         <button
           className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl shadow-md hover:from-green-600 hover:to-green-700  transition disabled:bg-gray-400 text-sm font-semibold"
-          onClick={() => handlePlantIdentification(image, false)}
-          disabled={loading || !image}
+          onClick={() => handleButtonClick(false)}
+          disabled={loading}
         >
           Nhận diện cây
         </button>
         <button
           className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-gradient-to-r from-teal-600 hover:to-teal-700 transition disabled:bg-gray-400 text-sm font-semibold"
-          onClick={() => handlePlantIdentification(image, true)}
-          disabled={loading || !image}
+          onClick={() => handleButtonClick(true)}
+          disabled={loading}
         >
           Chẩn đoán bệnh cây
         </button>
