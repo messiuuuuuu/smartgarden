@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { getDatabase, ref, get, update, set } from 'firebase/database';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 const AddDevice = () => {
     const [key, setKey] = useState('');
@@ -16,8 +17,14 @@ const AddDevice = () => {
             if (user) {
                 setUserId(user.uid);
             } else {
-                alert('Bạn cần đăng nhập để thực hiện chức năng này.');
-                navigate('/login');
+                Swal.fire({
+                    title: 'Lỗi!',
+                    text: 'Bạn cần đăng nhập để thực hiện chức năng này.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    navigate('/login');
+                });
             }
         });
 
@@ -28,7 +35,7 @@ const AddDevice = () => {
         setIsLoading(true);
         try {
             if (!userId) {
-                alert('Không tìm thấy thông tin người dùng.');
+                Swal.fire('Lỗi!', 'Không tìm thấy thông tin người dùng.', 'error');
                 setIsLoading(false);
                 return;
             }
@@ -38,7 +45,7 @@ const AddDevice = () => {
             const keySnapshot = await get(keyRef);
 
             if (!keySnapshot.exists()) {
-                alert('Key không hợp lệ hoặc không tồn tại.');
+                Swal.fire('Lỗi!', 'Key không hợp lệ hoặc không tồn tại.', 'error');
                 setIsLoading(false);
                 return;
             }
@@ -62,7 +69,7 @@ const AddDevice = () => {
             }
 
             if (isDeviceTaken) {
-                alert('Thiết bị này đã được thêm bởi một người dùng khác.');
+                Swal.fire('Lỗi!', 'Thiết bị này đã được thêm bởi một người dùng khác.', 'error');
                 setIsLoading(false);
                 return;
             }
@@ -74,21 +81,21 @@ const AddDevice = () => {
             if (userDevicesSnapshot.exists()) {
                 const deviceStatus = userDevicesSnapshot.val();
                 if (deviceStatus === true) {
-                    alert('Thiết bị này đã tồn tại trong danh sách của bạn.');
+                    Swal.fire('Thông báo', 'Thiết bị này đã tồn tại trong danh sách của bạn.', 'info');
                 } else if (deviceStatus === false) {
                     await set(userDevicesRef, true);
-                    alert('Thiết bị đã được kích hoạt lại thành công!');
+                    Swal.fire('Thành công!', 'Thiết bị đã được kích hoạt lại thành công!', 'success');
                 }
             } else {
                 await set(userDevicesRef, true);
-                alert('Thiết bị đã được thêm thành công vào danh sách của bạn!');
+                Swal.fire('Thành công!', 'Thiết bị đã được thêm thành công vào danh sách của bạn!', 'success');
             }
 
             setIsLoading(false);
             navigate('/devices'); // Đổi đường dẫn điều hướng nếu cần
         } catch (error) {
             console.error('Lỗi khi thêm thiết bị:', error);
-            alert('Có lỗi xảy ra khi thêm thiết bị.');
+            Swal.fire('Lỗi!', 'Có lỗi xảy ra khi thêm thiết bị.', 'error');
             setIsLoading(false);
         }
     };

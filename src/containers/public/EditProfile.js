@@ -4,6 +4,7 @@ import { ref, onValue, update } from 'firebase/database';
 import { auth, realtimedb } from '../../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 import anonAvatar from '../../assets/anon-avatar.png';
+import Swal from 'sweetalert2';
 
 const EditProfile = () => {
     const navigate = useNavigate();
@@ -65,10 +66,11 @@ const EditProfile = () => {
                     avatarUrl = data.secure_url;
                 } else {
                     console.error("Cloudinary upload failed. Response:", data);
-                    throw new Error('Cloudinary upload failed. Check console for details.');                }
+                    throw new Error('Cloudinary upload failed. Check console for details.');
+                }
             } catch (error) {
                 console.error('Error during the upload process:', error);
-                alert('Lỗi khi tải ảnh lên. Vui lòng kiểm tra console để biết chi tiết.');
+                Swal.fire('Lỗi!', 'Lỗi khi tải ảnh lên. Vui lòng kiểm tra console để biết chi tiết.', 'error');
                 setIsUploading(false);
                 return;
             }
@@ -79,12 +81,12 @@ const EditProfile = () => {
             displayName: displayName,
             avatar: avatarUrl,
         }).then(() => {
-            alert('Cập nhật thông tin thành công!');
+            Swal.fire('Thành công!', 'Cập nhật thông tin thành công!', 'success');
             setIsUploading(false);
             navigate(-1); // Go back to the previous page
         }).catch((error) => {
             console.error('Error updating profile:', error);
-            alert('Lỗi khi cập nhật thông tin.');
+            Swal.fire('Lỗi!', 'Lỗi khi cập nhật thông tin.', 'error');
             setIsUploading(false);
         });
     };

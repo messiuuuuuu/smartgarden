@@ -8,6 +8,7 @@ import { ref, get, set } from "firebase/database";
 import { realtimedb } from "../../firebaseConfig";
 import { signInWithGoogle } from "../../firebaseConfig";
 import { FcGoogle } from "react-icons/fc";
+import Swal from "sweetalert2";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -60,7 +61,6 @@ const Login = () => {
       const userRef = ref(realtimedb, `users/${user.uid}`);
       const snapshot = await get(userRef);
 
-      // Nếu user chưa có trong DB, tạo record mặc định (role = 0)
       if (!snapshot.exists()) {
         await set(userRef, {
           email: user.email || null,
@@ -108,7 +108,7 @@ const Login = () => {
         <div style={{ alignSelf: 'stretch', display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
           <span
             className="text-blue-200 cursor-pointer hover:underline "
-            onClick={() => alert("Hãy liên hệ Admin!")}
+            onClick={() => Swal.fire("Thông báo", "Hãy liên hệ Admin!", "info")}
             role="button"
           >
             Quên mật khẩu?
@@ -120,6 +120,8 @@ const Login = () => {
                 Đăng nhập
         </button>
 
+        <div className="social-login text-white">
+          <span>Hoặc đăng nhập bằng</span></div>
         <button
           type="button"
           onClick={handleGoogleSignIn}
@@ -127,7 +129,7 @@ const Login = () => {
           aria-label="Sign in with Google"
         >
           <FcGoogle className="google-icon" />
-          <span>Đăng nhập bằng Google</span>
+          <span> Google</span>
         </button>
 
         <div className="w-full flex items-center justify-between mt-6">

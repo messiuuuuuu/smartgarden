@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { FaLeaf, FaImage } from "react-icons/fa";
-import {
-  GoogleGenerativeAI,
-  HarmCategory,
-  HarmBlockThreshold,
-} from "@google/generative-ai";
+import { GoogleGenerativeAI} from "@google/generative-ai";
+import Markdown from 'react-markdown';
+import botAvatar from '../../assets/bot-avatar.png'; 
 
 const fileToBase64 = (file) => {
   return new Promise((resolve, reject) => {
@@ -17,7 +15,7 @@ const fileToBase64 = (file) => {
 
 const Chatbot = () => {
   const [messages, setMessages] = useState([
-    { text: "Xin chào! Tải ảnh cây để nhận diện hoặc chẩn đoán nhé!", sender: "bot" },
+    { text: "Xin chào! Tôi là trợ lý vườn thông minh. Hãy tải ảnh cây của bạn để tôi để nhận diện hoặc chẩn đoán bệnh nhé!", sender: "bot" },
   ]);
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -66,9 +64,9 @@ const Chatbot = () => {
 
       let prompt = "";
       if (!isDiagnosis) {
-        prompt = `Đây là hình ảnh của một cây. Hãy nhận diện chính xác tên giống cây, sau đó mô tả ngắn gọn và cung cấp thông tin chi tiết về điều kiện trồng tối ưu: điều kiện ánh sáng, loại đất, nhiệt độ, và độ ẩm tốt nhất cho cây. Phản hồi bằng tiếng Việt.`;
+        prompt = `Đây là hình ảnh của một cây. Hãy nhận diện chính xác tên giống cây, sau đó mô tả ngắn gọn và cung cấp thông tin chi tiết về điều kiện trồng tối ưu: điều kiện ánh sáng, loại đất, nhiệt độ, và độ ẩm tốt nhất cho cây. Phản hồi bằng tiếng Việt và sử dụng markdown để định dạng câu trả lời cho đẹp hơn.`;
       } else {
-        prompt = `Đây là hình ảnh của một cây. Dựa vào hình ảnh, hãy chẩn đoán xem cây có khỏe mạnh không. Nếu có dấu hiệu bệnh, hãy nêu tên bệnh, mô tả triệu chứng và đề xuất phương pháp điều trị/phòng ngừa phù hợp (hóa học, sinh học, hoặc tự nhiên). Phản hồi bằng tiếng Việt.`;
+        prompt = `Đây là hình ảnh của một cây. Dựa vào hình ảnh, hãy chẩn đoán xem cây có khỏe mạnh không. Nếu có dấu hiệu bệnh, hãy nêu tên bệnh, mô tả triệu chứng và đề xuất phương pháp điều trị/phòng ngừa phù hợp (hóa học, sinh học, hoặc tự nhiên). Phản hồi bằng tiếng Việt và sử dụng markdown để định dạng câu trả lời cho đẹp hơn.`;
       }
       
       const imagePart = {
@@ -87,10 +85,9 @@ const Chatbot = () => {
       setMessages((prev) => [
         ...prev,
         {
-          text: `Phân tích Gemini (Chức năng ${isDiagnosis ? "Chẩn đoán" : "Nhận diện"}):`,
+          text: <Markdown>{geminiText}</Markdown>,
           sender: "bot",
         },
-        { text: <pre className="whitespace-pre-wrap text-sm">{geminiText}</pre>, sender: "bot" },
       ]);
 
     } catch (error) {
@@ -107,21 +104,22 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-green-100 ">
-      <div className="bg-green-500 text-white py-6 px-6 text-2xl font-bold flex items-center justify-center gap-3 shadow-lg">
+    <div className="flex flex-col h-screen bg-green-50">
+      <div className="bg-white text-green-800 py-4 px-6 text-2xl font-bold flex items-center justify-center gap-3 shadow-sm border-b">
         <FaLeaf className="text-3xl" />
-        Plant ChatBot (Gemini)
+        Trợ lý vườn thông minh
       </div>
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`flex ${
+            className={`flex items-start gap-4 ${
               msg.sender === "user" ? "justify-end" : "justify-start"
             }`}
           >
+            {msg.sender === 'bot' && <img src={botAvatar} alt="bot avatar" className="w-10 h-10 rounded-full"/>}
             <div
-              className={`px-5 py-3 rounded-2xl max-w-md shadow-md ${
+              className={`px-5 py-3 rounded-2xl max-w-3xl shadow-md ${
                 msg.sender === "user"
                   ? "bg-green-500 text-white"
                   : "bg-white text-gray-800"
@@ -133,10 +131,8 @@ const Chatbot = () => {
                   alt="Uploaded"
                   className="w-48 h-48 rounded-lg shadow-md"
                 />
-              ) : typeof msg.text === "string" ? (
-                <pre className="whitespace-pre-wrap text-sm">{msg.text}</pre>
               ) : (
-                msg.text
+                <div className="prose"><pre className="whitespace-pre-wrap ">{msg.text}</pre></div>
               )}
             </div>
           </div>
@@ -149,7 +145,7 @@ const Chatbot = () => {
           </div>
         )}
       </div>
-      <div className="flex justify-center gap-6 p-6 bg-green-100 shadow-inner border-t border-gray-100">
+      <div className="flex justify-center gap-6 p-6 bg-white shadow-inner border-t">
         <input
           type="file"
           accept="image/*"
@@ -166,14 +162,14 @@ const Chatbot = () => {
         <button
           className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl shadow-md hover:from-green-600 hover:to-green-700  transition disabled:bg-gray-400 text-sm font-semibold"
           onClick={() => handlePlantIdentification(image, false)}
-          disabled={loading}
+          disabled={loading || !image}
         >
           Nhận diện cây
         </button>
         <button
           className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-gradient-to-r from-teal-600 hover:to-teal-700 transition disabled:bg-gray-400 text-sm font-semibold"
           onClick={() => handlePlantIdentification(image, true)}
-          disabled={loading}
+          disabled={loading || !image}
         >
           Chẩn đoán bệnh cây
         </button>

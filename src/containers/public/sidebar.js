@@ -14,6 +14,7 @@ const Sidebar = () => {
     const { gardenId } = useParams();
     const [gardenName, setGardenName] = useState('');
     const [userName, setUserName] = useState('Người dùng');
+    const [userEmail, setUserEmail] = useState('');
     const [avatarUrl, setAvatarUrl] = useState('');
 
     useEffect(() => {
@@ -32,6 +33,7 @@ const Sidebar = () => {
             if (user) {
                 const userId = user.uid;
                 const nameRef = ref(realtimedb, `users/${userId}/displayName`);
+                const emailRef = ref(realtimedb, `users/${userId}/email`);
                 const avatarRef = ref(realtimedb, `users/${userId}/avatar`);
                 const unsubscribeAvatar = onValue(avatarRef, (snapshot) => {
                     const avatar = snapshot.val();
@@ -41,13 +43,19 @@ const Sidebar = () => {
                     const name = snapshot.val();
                     setUserName(name || 'Người dùng');
                 });
+                const unsubscribeEmail = onValue(emailRef, (snapshot) => {
+                    const email = snapshot.val();
+                    setUserEmail(email || '');
+                });
                 return () => {
                     unsubscribeDB();
                     unsubscribeAvatar();
+                    unsubscribeEmail();
                 };
             } else {
                 setUserName('Người dùng');
                 setAvatarUrl(anonAvatar);
+                setUserEmail('chưa đăng nhập');
             }
         });
 
@@ -70,6 +78,9 @@ const Sidebar = () => {
                 <h2 className="mt-4 text-xl font-bold text-green-700">
                     {userName}
                 </h2>
+                <p className="text-green-600 text-sm mt-1 italic">
+                    {userEmail}
+                </p>
                 {gardenId && (
                     <p className="text-green-600 text-sm mt-2 italic">
                         Khu vườn: <span className="font-semibold">{gardenName}</span>
