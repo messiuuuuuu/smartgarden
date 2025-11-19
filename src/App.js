@@ -12,7 +12,7 @@ function App() {
 
         {/* Home sẽ bao bọc các trang khác */}
         <Route path="/" element={<Home />}>
-          <Route element={<Navigate to={path.DEVICELIST} />} /> {/* Mặc định chuyển đến danh sách thiết bị */}
+          <Route element={<Navigate to={path.DEVICELIST} />} /> 
           <Route path={path.DEVICELIST} element={<DeviceList />} />
           <Route path={path.DEVICEID} element={<DeviceId />} />
           <Route path={path.DEVICE} element={<AddDevice />} />

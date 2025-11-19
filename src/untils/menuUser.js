@@ -5,7 +5,7 @@ const { ImPencil2, MdOutlineLibraryBooks, RiRobot3Line, FaUserEdit} = icons
 const menuUser = [
     {
         id: 1,
-        text: 'Danh sách thiết bị',
+        text: 'Danh sách khu vườn',
         path: '/devices',
         icon: <MdOutlineLibraryBooks />
     },

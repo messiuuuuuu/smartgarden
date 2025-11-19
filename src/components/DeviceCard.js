@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import a from '../assets/1.jpg';
+import Swal from 'sweetalert2';
 
 const DeviceCard = ({ device, onRemoveDevice, groupId }) => (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-500 hover:scale-105">
@@ -33,7 +34,17 @@ const DeviceCard = ({ device, onRemoveDevice, groupId }) => (
                 </Link>
                 {groupId && onRemoveDevice && (
                     <button
-                        onClick={() => onRemoveDevice(groupId, device.id)}
+                        onClick={() => Swal.fire({
+                            title: 'Bạn có chắc chắn muốn xóa thiết bị này khỏi khu vườn?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Xóa',
+                            cancelButtonText: 'Hủy'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                onRemoveDevice(groupId, device.id);
+                            }
+                        })}
                         className="bg-red-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition-all duration-300"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

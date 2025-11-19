@@ -4,6 +4,7 @@ import { ref, onValue, set, remove } from 'firebase/database';
 import { realtimedb } from '../../firebaseConfig';
 import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
+import Swal from 'sweetalert2';
 
 const AdminDeviceDetail = () => {
     const { deviceId } = useParams();
@@ -77,12 +78,22 @@ const AdminDeviceDetail = () => {
 
     const handleEditName = () => setEditingName(true);
     const handleSaveName = () => {
-        set(ref(realtimedb, `devices/${deviceId}/name`), newDeviceName)
-            .then(() => {
-                setDeviceName(newDeviceName);
-                setEditingName(false);
-            })
-            .catch((error) => console.error("Lỗi khi cập nhật tên thiết bị:", error));
+        Swal.fire('Xác nhận lưu tên thiết bị', 'Bạn có chắc chắn muốn lưu tên thiết bị mới không?', 'question', {
+            showCancelButton: true,
+            confirmButtonText: 'Lưu',
+            cancelButtonText: 'Hủy',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const nameRef = ref(realtimedb, `devices/${deviceId}/name`);
+                set(nameRef, newDeviceName)
+                    .then(() => {
+                        setDeviceName(newDeviceName);
+                        setEditingName(false);
+                        Swal.fire('Thành công', 'Tên thiết bị đã được cập nhật.', 'success');
+                    })
+                    .catch((error) => console.error("Lỗi khi cập nhật tên thiết bị:", error));
+            }
+        });
     };
     const handleCancelEdit = () => {
         setNewDeviceName(deviceName);

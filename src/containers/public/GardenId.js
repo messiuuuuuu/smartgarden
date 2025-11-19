@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ref, onValue, set, push, remove } from 'firebase/database';
 import { realtimedb, auth } from '../../firebaseConfig';
 import { DeviceInfo, MoistureControl, PumpControl, HistoryChart, Settings} from '../../components';
-
+import Swal from 'sweetalert2';
 
 const DeviceId = () => {
     const { deviceId } = useParams();
@@ -59,13 +59,28 @@ const DeviceId = () => {
 
     const handleEditName = () => setEditingName(true);
     const handleSaveName = () => {
-        const nameRef = ref(realtimedb, `devices/${deviceId}/name`);
-        set(nameRef, newDeviceName)
-            .then(() => {
-                setDeviceName(newDeviceName);
-                setEditingName(false);
-            })
-            .catch((error) => console.error("Lỗi khi cập nhật tên thiết bị:", error));
+        Swal.fire({
+            title: 'Lưu Tên Thiết Bị',
+            text: `Bạn có chắc chắn muốn lưu tên thiết bị là "${newDeviceName}"?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Lưu',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const nameRef = ref(realtimedb, `devices/${deviceId}/name`);
+                set(nameRef, newDeviceName)
+                    .then(() => {
+                        setDeviceName(newDeviceName);
+                        setEditingName(false);
+                        Swal.fire('Thành Công', 'Tên thiết bị đã được cập nhật.', 'success');
+                    })
+                    .catch((error) => {
+                        console.error("Lỗi khi lưu tên thiết bị:", error);
+                        Swal.fire('Lỗi', 'Đã xảy ra lỗi khi lưu tên thiết bị.', 'error');
+                    });
+            }
+        });
     };
     const handleCancelEdit = () => {
         setNewDeviceName(deviceName);
@@ -75,23 +90,26 @@ const DeviceId = () => {
     const handleDelete = async () => {
         const user = auth.currentUser;
         if (!user) return;
-        setShowDeleteModal(true);
-    };
 
-    const confirmDelete = () => {
-        const user = auth.currentUser;
-        if (!user) return;
-        const userDeviceRef = ref(realtimedb, `users/${user.uid}/devices/${deviceId}`);
-        set(userDeviceRef, false)
-            .then(() => {
-                setShowDeleteModal(false);
-                navigate('/devices');
-            })
-            .catch((error) => console.error("Lỗi khi xóa thiết bị:", error));
-    };
-
-    const cancelDelete = () => {
-        setShowDeleteModal(false);
+        Swal.fire({
+            title: 'Xác nhận xóa thiết bị',
+            html: `Bạn có chắc chắn muốn xóa thiết bị <span class="font-bold text-green-700">${deviceName || 'này'}</span>? `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const userDeviceRef = ref(realtimedb, `users/${user.uid}/devices/${deviceId}`);
+                set(userDeviceRef, false)
+                    .then(() => {
+                        navigate('/devices');
+                    })
+                    .catch((error) => console.error("Lỗi khi xóa thiết bị:", error));
+            }
+        });
     };
 
     const handleSetMoistureChange = (e) => {
@@ -141,34 +159,11 @@ const DeviceId = () => {
                         onClick={() => navigate('/devices')}
                         className="w-full py-3 bg-green-600 text-white font-semibold rounded-full shadow-lg hover:bg-green-700 transition-all duration-200"
                     >
-                        Trở về danh sách thiết bị
+                        Trở về danh sách khu vườn
                     </button>
                 </div>
 
-                {showDeleteModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start pt-20 z-50">
-                        <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
-                            <h3 className="text-xl font-semibold text-gray-800 mb-4">Xác nhận xóa thiết bị</h3>
-                            <p className="text-gray-600 mb-6">
-                                Bạn có chắc chắn muốn xóa thiết bị <span className="font-bold text-green-700">{deviceName || 'này'}</span>? Hành động này không thể hoàn tác.
-                            </p>
-                            <div className="flex justify-end gap-4">
-                                <button
-                                    onClick={cancelDelete}
-                                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200"
-                                >
-                                    Hủy
-                                </button>
-                                <button
-                                    onClick={confirmDelete}
-                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200"
-                                >
-                                    Xóa
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                
             </div>
         </div>
     );

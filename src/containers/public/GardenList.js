@@ -87,19 +87,26 @@ const GardenList = () => {
             .catch(error => setError("Lỗi khi thêm thiết bị: " + error.message));
     };
 
-    const handleRenameGroup = () => setEditingGroupName(true);
-        const handleSaveGroupName = (groupId) => {
-            const groupNameRef = ref(realtimedb, `groups/${groupId}/name`);
-            set(groupNameRef, newGroupName)
-                .then(() => {
-                    setEditingGroupName(true);
-                })
-                .catch((error) => console.error("Lỗi khi cập nhật tên nhóm thiết bị:", error));
-        };
-        const handleCancelGroupEdit = () => {
-            setNewGroupName(newGroupName);
-            setEditingGroupName(false);
-        };
+    const handleRenameGroup = (groupId, newName) => {
+        const user = auth.currentUser;
+        if (!user) {
+            setError("Bạn cần đăng nhập để thực hiện chức năng này.");
+            return;
+        }
+        if (!newName.trim()) {
+            setError("Tên nhóm không được để trống");
+            return;
+        }
+
+        const groupRef = ref(realtimedb, `users/${user.uid}/groups/${groupId}`);
+        update(groupRef, { name: newName })
+            .then(() => {
+                setError(null);
+            })
+            .catch((error) => {
+                setError("Lỗi khi đổi tên nhóm: " + error.message);
+            });
+    };
         
     const handleDeleteGroup = (groupId) => {
         const user = auth.currentUser;

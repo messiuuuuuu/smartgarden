@@ -22,7 +22,7 @@ const DeviceInfo = ({
                         placeholder="Nhập tên thiết bị"
                     />
                     <button
-                        onClick={handleSaveName}
+                        onClick= {handleSaveName}
                         className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200"
                     >
                         Lưu
