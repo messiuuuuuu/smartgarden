@@ -2,13 +2,42 @@ import React, { useState } from 'react';
 import AddDevice from './AddDevice';
 import DeviceCard from './DeviceCard';
 
-const GroupSection = ({ group, groupId, devices, groups, onAddDevice, onDeleteGroup, onRemoveDevice }) => {
+const GroupSection = ({ group, groupId, devices, groups, onAddDeviceToGroup, onDeleteGroup, onRemoveDeviceFromGroup, handleRenameGroup }) => {
     const [showAddForm, setShowAddForm] = useState(false);
+    const [isRenaming, setIsRenaming] = useState(false);
+    const [newName, setNewName] = useState(group.name);
+
 
     return (
         <div className="mb-12">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-3xl font-bold text-gray-800">{group.name}</h2>
+                {isRenaming ? (
+                    <div className="flex items-center gap-4">
+                        <input
+                            type="text"
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                            className="border rounded-lg px-3 py-2"
+                        />
+                        <button
+                            onClick={() => {
+                                handleRenameGroup(groupId, newName);
+                                setIsRenaming(false);
+                            }}
+                            className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                        >
+                            Lưu
+                        </button>
+                        <button
+                            onClick={() => setIsRenaming(false)}
+                            className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                        >
+                            Hủy
+                        </button>
+                    </div>
+                ) : (
+                    <h2 className="text-3xl font-bold text-gray-800">{group.name}</h2>
+                )}
                 <div className="flex gap-4">
                     <button
                         onClick={() => setShowAddForm(!showAddForm)}
@@ -18,6 +47,15 @@ const GroupSection = ({ group, groupId, devices, groups, onAddDevice, onDeleteGr
                             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                         </svg>
                         {showAddForm ? 'Ẩn' : 'Thêm Thiết Bị'}
+                    </button>
+                    <button
+                        onClick={() => setIsRenaming(true)}
+                        className="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-yellow-600 transition-all duration-300 flex items-center gap-2"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                        </svg>
+                        Đổi Tên Nhóm
                     </button>
                     <button
                         onClick={() => onDeleteGroup(groupId)}
@@ -35,7 +73,7 @@ const GroupSection = ({ group, groupId, devices, groups, onAddDevice, onDeleteGr
                     groupId={groupId}
                     devices={devices}
                     groups={groups}
-                    onAddDevice={onAddDevice}
+                    onAddDevice={onAddDeviceToGroup}
                 />
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -46,7 +84,7 @@ const GroupSection = ({ group, groupId, devices, groups, onAddDevice, onDeleteGr
                             key={device.id}
                             device={device}
                             groupId={groupId}
-                            onRemoveDevice={onRemoveDevice}
+                            onRemoveDevice={onRemoveDeviceFromGroup}
                         />
                     ))}
             </div>

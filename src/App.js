@@ -18,7 +18,6 @@ function App() {
           <Route path={path.DEVICE} element={<AddDevice />} />
           <Route path={path.CHATBOT} element={<Chatbot />} />
           <Route path={path.MAP} element={<MapScreen />} />
-          <Route path={path.OVERVIEW} element={<Overview />} />
           <Route path="/edit-profile" element={<EditProfile />} />
 
         </Route>

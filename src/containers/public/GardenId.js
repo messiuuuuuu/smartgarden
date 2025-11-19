@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ref, onValue, set } from 'firebase/database';
+import { ref, onValue, set, push, remove } from 'firebase/database';
 import { realtimedb, auth } from '../../firebaseConfig';
 import { DeviceInfo, MoistureControl, PumpControl, HistoryChart, Settings} from '../../components';
 
@@ -48,6 +48,7 @@ const DeviceId = () => {
         onValue(setRef, (snapshot) => setSetMoisture(snapshot.val() || ''));
         onValue(timeRef, (snapshot) => setTime(snapshot.val() || ''));
     }, [deviceId]);
+
 
     const handlePumpControl = (status) => {
         const pumpStatusRef = ref(realtimedb, `devices/${deviceId}/mayBom/trangThai`);

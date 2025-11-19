@@ -28,7 +28,7 @@ const AddDevice = ({ groupId, devices, groups, onAddDevice }) => {
                 </select>
                 <button
                     onClick={handleAdd}
-                    className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-gradient-to-r from-teal-500 to-teal-600 transition-all duration-300"
+                    className="bg-green-500 from-teal-500 to-teal-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-gradient-to-r from-teal-500 to-teal-600 transition-all duration-300"
                 >
                     Thêm
                 </button>
