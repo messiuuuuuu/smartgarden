@@ -30,6 +30,7 @@ const GroupSection = ({ group, groupId, devices, groups, onAddDeviceToGroup, onD
         }).then((result) => {
             if (result.isConfirmed) {
                 onDeleteGroup(groupId);
+                Swal.fire('Đã xóa!', 'Khu vườn đã được xóa.', 'success');
             }
         });
     };

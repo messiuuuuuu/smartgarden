@@ -72,10 +72,12 @@ const GardenList = () => {
         const newGroupRef = ref(realtimedb, `users/${user.uid}/groups/${Date.now()}`);
         set(newGroupRef, {
             name: newGroupName,
+            description: newGroupDescription,
             devices: {}
         })
             .then(() => {
                 setNewGroupName('');
+                setNewGroupDescription('');
                 setIsAddGroupOpen(false);
                 setError(null);
             })
