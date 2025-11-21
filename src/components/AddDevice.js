@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const AddDevice = ({ groupId, devices, groups, onAddDevice }) => {
+const AddDevice = ({ groupId, devices, groups, onAddDeviceToGroup }) => {
     const [selectedDevice, setSelectedDevice] = useState('');
 
     const unassignedDevices = devices.filter(device => {
@@ -9,7 +9,7 @@ const AddDevice = ({ groupId, devices, groups, onAddDevice }) => {
 
     const handleAdd = () => {
         if (!selectedDevice) return;
-        onAddDevice(groupId, selectedDevice);
+        onAddDeviceToGroup(selectedDevice);
         setSelectedDevice('');
     };
 
@@ -34,7 +34,7 @@ const AddDevice = ({ groupId, devices, groups, onAddDevice }) => {
                 </button>
             </div>
             {unassignedDevices.length === 0 && (
-                <p className="text-gray-600 text-sm mt-2">Không có thiết bị nào chưa được phân nhóm.</p>
+                 <p className="text-center text-gray-500 mt-4">Tất cả các thiết bị đã được thêm vào một khu vườn.</p>
             )}
         </div>
     );

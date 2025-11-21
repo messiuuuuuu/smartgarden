@@ -155,7 +155,7 @@ const DeviceId = () => {
             <div className="relative bg-green-100 shadow-2xl rounded-2xl w-full max-w-4xl p-8 transform transition-all hover:scale-[1.01]">
                 <button
                     onClick={() => navigate(groupId ? `/devices?group=${groupId}` : '/devices')}
-                    className="absolute top-8 left-8 bg-gray-500 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-gray-600 transition-all duration-300 flex items-center gap-2"
+                    className="absolute top-8 left-8 bg-gray-500 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-gray-600 transition-all duration-300 flex items-center gap-2 z-10"
                 >
                     Trở về khu vườn
                 </button>

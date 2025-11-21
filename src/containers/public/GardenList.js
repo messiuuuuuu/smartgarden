@@ -6,6 +6,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import AddGroup from '../../components/AddGroup';
 import GroupSection from '../../components/GroupSection';
 import UnassignedDevice from '../../components/UnassignedDevice';
+import GardenCard from './GardenCard'; // Import GardenCard
 
 const GardenList = () => {
     const [devices, setDevices] = useState([]);
@@ -90,7 +91,7 @@ const GardenList = () => {
             .catch(error => setError("Lỗi khi thêm thiết bị: " + error.message));
     };
 
-    const handleRenameGroup = (groupId, newName) => {
+    const handleUpdateGroupInfo = (groupId, newName, newDescription) => {
         const user = auth.currentUser;
         if (!user) {
             setError("Bạn cần đăng nhập để thực hiện chức năng này.");
@@ -102,12 +103,12 @@ const GardenList = () => {
         }
 
         const groupRef = ref(realtimedb, `users/${user.uid}/groups/${groupId}`);
-        update(groupRef, { name: newName })
+        update(groupRef, { name: newName, description: newDescription })
             .then(() => {
                 setError(null);
             })
             .catch((error) => {
-                setError("Lỗi khi đổi tên nhóm: " + error.message);
+                setError("Lỗi khi cập nhật thông tin nhóm: " + error.message);
             });
     };
         
@@ -209,25 +210,20 @@ const GardenList = () => {
                         onAddDeviceToGroup={handleAddDeviceToGroup}
                         onDeleteGroup={handleDeleteGroup}
                         onRemoveDeviceFromGroup={handleRemoveDeviceFromGroup}
-                        handleRenameGroup={handleRenameGroup}
+                        onUpdateGroupInfo={handleUpdateGroupInfo}
                     />
                 ) : (
                     <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                             {currentGardens.length > 0 ? (
                                 currentGardens.map(([groupId, group]) => (
-                                    <div
+                                    <GardenCard
                                         key={groupId}
-                                        onClick={() => handleSelectGroup(groupId)}
-                                        className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"
-                                    >
-                                        <div className="p-6">
-                                            <h3 className="text-2xl font-bold text-gray-800 mb-2">{group.name}</h3>
-                                            <p className="text-gray-600">
-                                                Số lượng thiết bị: {group.devices ? Object.keys(group.devices).length : 0}
-                                            </p>
-                                        </div>
-                                    </div>
+                                        group={group}
+                                        groupId={groupId}
+                                        onSelectGroup={handleSelectGroup}
+                                        isSelected={selectedGroupId === groupId}
+                                    />
                                 ))
                             ) : (
                                 !isAddGroupOpen && <p className="text-center text-gray-500 col-span-3">Chưa có khu vườn nào. Hãy thêm một khu vườn mới!</p>

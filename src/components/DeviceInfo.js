@@ -36,7 +36,7 @@ const DeviceInfo = ({
                 </div>
             ) : (
                 <>
-                    <h1 className="text-3xl font-extrabold bg-gradient-to-r from-teal-600 to-blue-700 bg-clip-text text-transparent text-center mx-auto animate-fadeIn">
+                    <h1 className="text-3xl font-extrabold bg-gradient-to-r from-teal-600 to-blue-700 bg-clip-text text-transparent text-center animate-fadeIn">
                         {deviceName || 'Thiết bị của bạn'}
                     </h1>
                     <div className="absolute right-0 flex gap-2">
