@@ -6,8 +6,10 @@ const PumpControl = ({ pumpStatus, handlePumpControl, soilMoisture, setMoisture 
     let statusText;
     if (isAuto) {
         if (soilMoisture < setMoisture) {
+            pumpStatus = 21;
             statusText = 'Tự động (Bật)';
         } else {
+            pumpStatus = 20;
             statusText = 'Tự động (Tắt)';
         }
     } else if (pumpStatus === 1) {

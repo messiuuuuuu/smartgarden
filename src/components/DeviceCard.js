@@ -1,26 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import a from '../assets/1.jpg'; // Assuming this is your default device image
-import Swal from 'sweetalert2';
 
-const DeviceCard = ({ device, groupId, onRemoveDevice }) => {
-
-    const handleRemove = () => {
-        Swal.fire({
-            title: 'Bạn có chắc chắn muốn xóa thiết bị này?',
-            text: "Hành động này không thể hoàn tác!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Xóa',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                onRemoveDevice(groupId, device.id);
-            }
-        });
-    };
+const DeviceCard = ({ device, onRemove }) => {
 
     const getPumpStatus = (mayBom) => {
         if (mayBom === undefined || mayBom.trangThai === undefined) {
@@ -65,9 +47,9 @@ const DeviceCard = ({ device, groupId, onRemoveDevice }) => {
                             Xem Chi Tiết
                         </button>
                     </Link>
-                    {groupId && (
+                    {onRemove && (
                         <button
-                            onClick={handleRemove}
+                            onClick={onRemove}
                             className="w-full px-4 py-2 bg-red-500 text-white font-bold text-xs uppercase tracking-wide rounded-lg hover:bg-red-600 focus:outline-none focus:ring focus:ring-red-400 whitespace-nowrap"
                         >
                             Xóa
