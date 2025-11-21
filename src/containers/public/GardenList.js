@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ref, onValue, set, update, remove } from 'firebase/database';
 import { realtimedb, auth } from '../../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import AddGroup from '../../components/AddGroup';
 import GroupSection from '../../components/GroupSection';
 import UnassignedDevice from '../../components/UnassignedDevice';
@@ -10,13 +11,15 @@ const GardenList = () => {
     const [devices, setDevices] = useState([]);
     const [groups, setGroups] = useState({});
     const [newGroupName, setNewGroupName] = useState('');
-    const [editingGroupName, setEditingGroupName] = useState(false);
     const [error, setError] = useState(null);
     const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [selectedGroupId, setSelectedGroupId] = useState(null); // New state for selected group
     const gardensPerPage = 9;
+
+    const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const selectedGroupId = searchParams.get('group');
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -116,7 +119,7 @@ const GardenList = () => {
         remove(groupRef)
             .then(() => {
                 setError(null);
-                setSelectedGroupId(null); // Go back to grid view after deletion
+                setSearchParams({}); // Go back to grid view after deletion
             })
             .catch(error => setError("Lỗi khi xóa nhóm: " + error.message));
     };
@@ -139,7 +142,7 @@ const GardenList = () => {
     };
 
     const handleSelectGroup = (groupId) => {
-        setSelectedGroupId(groupId);
+        setSearchParams({ group: groupId });
     };
 
     const indexOfLastGarden = currentPage * gardensPerPage;
@@ -163,7 +166,7 @@ const GardenList = () => {
                     </h1>
                     {selectedGroupId ? (
                         <button
-                            onClick={() => setSelectedGroupId(null)}
+                            onClick={() => setSearchParams({})}
                             className="bg-gray-500 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-gray-600 transition-all duration-300 flex items-center gap-2"
                         >
                             Quay lại danh sách

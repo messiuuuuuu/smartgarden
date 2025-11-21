@@ -16,7 +16,7 @@ const DeviceId = () => {
     const navigate = useNavigate();
     const [editingName, setEditingName] = useState(false);
     const [newDeviceName, setNewDeviceName] = useState('');
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [groupId, setGroupId] = useState(null);
 
     useEffect(() => {
         if (!deviceId) return;
@@ -27,6 +27,28 @@ const DeviceId = () => {
         const nameRef = ref(realtimedb, `devices/${deviceId}/name`);
         const setRef = ref(realtimedb, `devices/${deviceId}/doAmDat/set`);
         const timeRef = ref(realtimedb, `devices/${deviceId}/time`);
+
+        const usersRef = ref(realtimedb, 'users');
+        const unsubscribeUsers = onValue(usersRef, (snapshot) => {
+            const usersData = snapshot.val();
+            let foundGroupId = null;
+            if (usersData) {
+                for (const userId of Object.keys(usersData)) {
+                    const user = usersData[userId];
+                    if (user.groups) {
+                        for (const gId of Object.keys(user.groups)) {
+                            const group = user.groups[gId];
+                            if (group.devices && group.devices[deviceId]) {
+                                foundGroupId = gId;
+                                break;
+                            }
+                        }
+                    }
+                    if (foundGroupId) break;
+                }
+            }
+            setGroupId(foundGroupId);
+        }, { onlyOnce: true });
 
         onValue(nameRef, (snapshot) => {
             const name = snapshot.val();
@@ -130,7 +152,13 @@ const DeviceId = () => {
 
     return (
         <div className="min-h-screen bg-green-100 p-6 flex items-center justify-center">
-            <div className="bg-green-100 shadow-2xl rounded-2xl w-full max-w-4xl p-8 transform transition-all hover:scale-[1.01]">
+            <div className="relative bg-green-100 shadow-2xl rounded-2xl w-full max-w-4xl p-8 transform transition-all hover:scale-[1.01]">
+                <button
+                    onClick={() => navigate(groupId ? `/devices?group=${groupId}` : '/devices')}
+                    className="absolute top-8 left-8 bg-gray-500 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-gray-600 transition-all duration-300 flex items-center gap-2"
+                >
+                    Trở về khu vườn
+                </button>
                 <DeviceInfo
                     deviceName={deviceName}
                     editingName={editingName}
@@ -142,7 +170,7 @@ const DeviceId = () => {
                     handleDelete={handleDelete}
                 />
 
-                <div className="space-y-8">
+                <div className="space-y-8 mt-8">
                     <MoistureControl
                         soilMoisture={soilMoisture}
                         setMoisture={setMoisture}
@@ -154,16 +182,7 @@ const DeviceId = () => {
                     <PumpControl pumpStatus={pumpStatus} handlePumpControl={handlePumpControl} soilMoisture={soilMoisture} setMoisture={setMoisture} />
 
                     <HistoryChart historyData={historyData} />
-
-                    <button
-                        onClick={() => navigate('/devices')}
-                        className="w-full py-3 bg-green-600 text-white font-semibold rounded-full shadow-lg hover:bg-green-700 transition-all duration-200"
-                    >
-                        Trở về danh sách khu vườn
-                    </button>
                 </div>
-
-                
             </div>
         </div>
     );

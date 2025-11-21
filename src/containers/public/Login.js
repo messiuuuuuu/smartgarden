@@ -83,8 +83,8 @@ const Login = () => {
   };
 
   return (
-    <div className="login-body">
-      <form className="login-card" onSubmit={handleSubmit}>
+    <div className="login-body ">
+      <form className="login-card " onSubmit={handleSubmit}>
         <h3>Đăng nhập</h3>
 
         <label>Email</label>
@@ -120,8 +120,12 @@ const Login = () => {
                 Đăng nhập
         </button>
 
-        <div className="social-login text-white">
-          <span>Hoặc đăng nhập bằng</span></div>
+        <div className="flex w-full items-center py-6 text-white">
+          <div className="h-px w-full bg-slate-700 dark:bg-slate-200"></div>
+          <span className="px-2">Hoặc</span>
+          <div className="h-px w-full bg-slate-700 dark:bg-slate-200"></div>
+        </div>
+
         <button
           type="button"
           onClick={handleGoogleSignIn}
@@ -129,7 +133,7 @@ const Login = () => {
           aria-label="Sign in with Google"
         >
           <FcGoogle className="google-icon" />
-          <span> Google</span>
+          <span>Đăng nhập bằng Google</span>
         </button>
 
         <div className="w-full flex items-center justify-between mt-6">
