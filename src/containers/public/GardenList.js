@@ -12,6 +12,7 @@ const GardenList = () => {
     const [devices, setDevices] = useState([]);
     const [groups, setGroups] = useState({});
     const [newGroupName, setNewGroupName] = useState('');
+    const [newGroupDescription, setNewGroupDescription] = useState('');
     const [error, setError] = useState(null);
     const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -195,6 +196,8 @@ const GardenList = () => {
                     <AddGroup
                         newGroupName={newGroupName}
                         setNewGroupName={setNewGroupName}
+                        newGroupDescription={newGroupDescription}
+                        setNewGroupDescription={setNewGroupDescription}
                         onAddGroup={handleAddGroup}
                         onCancel={() => setIsAddGroupOpen(false)}
                     />

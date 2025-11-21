@@ -1,5 +1,6 @@
 import React from 'react';
 
+
 const AddGroup = ({ newGroupName, setNewGroupName, newGroupDescription, setNewGroupDescription, onAddGroup, onCancel }) => (
     <div className="w-full max-w-7xl mb-8 p-6 bg-white rounded-xl shadow-md border border-gray-200">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Thêm Nhóm Mới</h2>
