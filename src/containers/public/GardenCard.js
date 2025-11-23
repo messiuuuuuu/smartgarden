@@ -12,7 +12,7 @@ const GardenCard = ({ group, groupId, onSelectGroup, isSelected }) => {
             <div
                 className="absolute inset-0 bg-cover bg-center transform transition-transform duration-700 ease-out group-hover:scale-110"
                 style={{
-                    backgroundImage: `url(${group.image || a})`,
+                    backgroundImage: `url(${group.imageUrl || a})`,
                 }}
             ></div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>

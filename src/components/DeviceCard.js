@@ -29,7 +29,7 @@ const DeviceCard = ({ device, onRemove }) => {
             <div
                 className="absolute inset-0 bg-cover bg-center transform transition-transform duration-700 ease-out group-hover:scale-110"
                 style={{
-                    backgroundImage: `url(${a})`,
+                    backgroundImage: `url(${device.imageUrl || a})`,
                 }}
             ></div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>

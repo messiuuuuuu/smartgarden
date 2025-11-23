@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { ref, onValue, set, update, remove } from 'firebase/database';
+import { ref, onValue, set, update, remove, push, serverTimestamp } from 'firebase/database';
 import { realtimedb, auth } from '../../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import AddGroup from '../../components/AddGroup';
 import GroupSection from '../../components/GroupSection';
 import UnassignedDevice from '../../components/UnassignedDevice';
-import GardenCard from './GardenCard'; // Import GardenCard
+import GardenCard from './GardenCard';
+import anonAvatar from '../../assets/anon-avatar.png';
+import Swal from 'sweetalert2';
 
 const GardenList = () => {
     const [devices, setDevices] = useState([]);
     const [groups, setGroups] = useState({});
     const [newGroupName, setNewGroupName] = useState('');
     const [newGroupDescription, setNewGroupDescription] = useState('');
+    const [newImageFile, setNewImageFile] = useState(null);
+    const [previewImage, setPreviewImage] = useState(anonAvatar);
     const [error, setError] = useState(null);
     const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -33,7 +37,7 @@ const GardenList = () => {
 
             setLoading(true);
             const userRef = ref(realtimedb, `users/${user.uid}`);
-            onValue(userRef, (snapshot) => {
+            const onValueChange = onValue(userRef, (snapshot) => {
                 const userData = snapshot.val() || {};
                 const loadedGroups = userData.groups || {};
                 const userDeviceIds = userData.devices || {};
@@ -55,33 +59,96 @@ const GardenList = () => {
                 setError("Lỗi khi tải dữ liệu người dùng: " + error.message);
                 setLoading(false);
             });
+
+            return () => onValueChange();
         });
 
         return () => unsubscribe();
     }, []);
 
-    const handleAddGroup = () => {
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setNewImageFile(file);
+            setPreviewImage(URL.createObjectURL(file));
+        }
+    };
+
+    const handleCancelAddGroup = () => {
+        setIsAddGroupOpen(false);
+        setNewGroupName('');
+        setNewGroupDescription('');
+        setNewImageFile(null);
+        setPreviewImage(anonAvatar);
+        setError(null);
+    };
+
+    const handleAddGroup = async () => {
         if (!newGroupName.trim()) {
-            setError("Tên nhóm không được để trống");
+            Swal.fire('Lỗi', 'Tên nhóm không được để trống.', 'error');
             return;
         }
 
         const user = auth.currentUser;
-        if (!user) return;
+        if (!user) {
+            Swal.fire('Lỗi', 'Bạn phải đăng nhập để tạo nhóm.', 'error');
+            return;
+        }
 
-        const newGroupRef = ref(realtimedb, `users/${user.uid}/groups/${Date.now()}`);
-        set(newGroupRef, {
+        setLoading(true);
+        let imageUrl = '';
+
+        if (newImageFile) {
+            const CLOUD_NAME = process.env.REACT_APP_CLOUD_NAME;
+            const UPLOAD_PRESET = process.env.REACT_APP_UPLOAD_PRESET;
+            const formData = new FormData();
+            formData.append('file', newImageFile);
+            formData.append('upload_preset', UPLOAD_PRESET);
+            formData.append('folder', 'garden');
+
+            try {
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message || 'Cloudinary upload failed');
+                }
+
+                const data = await response.json();
+                imageUrl = data.secure_url;
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                Swal.fire('Lỗi Tải Lên', `Lỗi khi tải ảnh lên: ${error.message}`, 'error');
+                setLoading(false);
+                return;
+            }
+        }
+
+        const groupsRef = ref(realtimedb, `users/${user.uid}/groups`);
+        const newGroupRef = push(groupsRef);
+        const newGroupData = {
             name: newGroupName,
             description: newGroupDescription,
+            imageUrl: imageUrl || anonAvatar,
+            createdAt: serverTimestamp(),
             devices: {}
-        })
+        };
+
+        set(newGroupRef, newGroupData)
             .then(() => {
-                setNewGroupName('');
-                setNewGroupDescription('');
-                setIsAddGroupOpen(false);
-                setError(null);
+                Swal.fire('Thành Công', 'Khu vườn mới đã được tạo.', 'success');
+                handleCancelAddGroup();
             })
-            .catch(error => setError("Lỗi khi thêm nhóm: " + error.message));
+            .catch(error => {
+                console.error("Firebase error:", error);
+                Swal.fire('Lỗi Database', `Lỗi khi thêm nhóm: ${error.message}`, 'error');
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     };
 
     const handleAddDeviceToGroup = (groupId, deviceId) => {
@@ -90,28 +157,70 @@ const GardenList = () => {
 
         const groupDeviceRef = ref(realtimedb, `users/${user.uid}/groups/${groupId}/devices`);
         update(groupDeviceRef, { [deviceId]: true })
-            .then(() => setError(null))
-            .catch(error => setError("Lỗi khi thêm thiết bị: " + error.message));
+            .then(() => {
+                Swal.fire('Thành công', 'Đã thêm thiết bị vào khu vườn.', 'success');
+            })
+            .catch(error => {
+                Swal.fire('Lỗi', `Lỗi khi thêm thiết bị: ${error.message}`, 'error');
+            });
     };
 
-    const handleUpdateGroupInfo = (groupId, newName, newDescription) => {
+    const handleUpdateGroupInfo = async (groupId, newName, newDescription, imageFile) => {
         const user = auth.currentUser;
         if (!user) {
-            setError("Bạn cần đăng nhập để thực hiện chức năng này.");
+            Swal.fire('Lỗi', 'Bạn cần đăng nhập để thực hiện chức năng này.', 'error');
             return;
         }
         if (!newName.trim()) {
-            setError("Tên nhóm không được để trống");
+            Swal.fire('Lỗi', 'Tên nhóm không được để trống.', 'error');
             return;
         }
 
+        setLoading(true);
+        const updates = {
+            name: newName,
+            description: newDescription,
+        };
+
+        if (imageFile) {
+            const CLOUD_NAME = process.env.REACT_APP_CLOUD_NAME;
+            const UPLOAD_PRESET = process.env.REACT_APP_UPLOAD_PRESET;
+            const formData = new FormData();
+            formData.append('file', imageFile);
+            formData.append('upload_preset', UPLOAD_PRESET);
+            formData.append('folder', 'garden');
+
+            try {
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message || 'Cloudinary upload failed');
+                }
+                const data = await response.json();
+                updates.imageUrl = data.secure_url;
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                Swal.fire('Lỗi Tải Lên', `Lỗi khi tải ảnh lên: ${error.message}`, 'error');
+                setLoading(false);
+                return;
+            }
+        }
+
         const groupRef = ref(realtimedb, `users/${user.uid}/groups/${groupId}`);
-        update(groupRef, { name: newName, description: newDescription })
+        update(groupRef, updates)
             .then(() => {
-                setError(null);
+                Swal.fire('Thành công', 'Thông tin khu vườn đã được cập nhật.', 'success');
             })
             .catch((error) => {
-                setError("Lỗi khi cập nhật thông tin nhóm: " + error.message);
+                console.error("Lỗi khi cập nhật thông tin nhóm:", error);
+                Swal.fire('Lỗi', `Lỗi khi cập nhật thông tin nhóm: ${error.message}`, 'error');
+            })
+            .finally(() => {
+                setLoading(false);
             });
     };
         
@@ -122,27 +231,31 @@ const GardenList = () => {
         const groupRef = ref(realtimedb, `users/${user.uid}/groups/${groupId}`);
         remove(groupRef)
             .then(() => {
-                setError(null);
-                setSearchParams({}); // Go back to grid view after deletion
+                Swal.fire('Đã xóa!', 'Khu vườn của bạn đã được xóa.', 'success');
+                setSearchParams({}); 
             })
-            .catch(error => setError("Lỗi khi xóa nhóm: " + error.message));
+            .catch(error => {
+                Swal.fire('Lỗi', `Lỗi khi xóa nhóm: ${error.message}`, 'error');
+            });
     };
 
     const handleRemoveDeviceFromGroup = (groupId, deviceId) => {
         const user = auth.currentUser;
-        if (!user) return;
+        if (!user) {
+            Swal.fire('Lỗi', 'Bạn cần đăng nhập để thực hiện chức năng này.', 'error');
+            return;
+        }
 
         const deviceRef = ref(realtimedb, `users/${user.uid}/groups/${groupId}/devices/${deviceId}`);
         remove(deviceRef)
             .then(() => {
-                const updatedGroups = { ...groups };
-                if (updatedGroups[groupId] && updatedGroups[groupId].devices) {
-                    delete updatedGroups[groupId].devices[deviceId];
-                    setGroups(updatedGroups);
-                }
-                setError(null);
+                Swal.fire('Thành Công', 'Đã xóa thiết bị khỏi khu vườn.', 'success');
+                // The onValue listener will automatically update the UI.
             })
-            .catch(error => setError("Lỗi khi xóa thiết bị khỏi nhóm: " + error.message));
+            .catch(error => {
+                console.error("Lỗi khi xóa thiết bị khỏi nhóm:", error);
+                Swal.fire('Lỗi', `Lỗi khi xóa thiết bị khỏi nhóm: ${error.message}`, 'error');
+            });
     };
 
     const handleSelectGroup = (groupId) => {
@@ -154,10 +267,6 @@ const GardenList = () => {
     const currentGardens = Object.entries(groups).slice(indexOfFirstGarden, indexOfLastGarden);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-    if (loading) {
-        return <div className="flex justify-center items-center h-screen text-gray-600">Đang tải dữ liệu...</div>;
-    }
 
     const selectedGroup = selectedGroupId ? groups[selectedGroupId] : null;
 
@@ -201,7 +310,9 @@ const GardenList = () => {
                         newGroupDescription={newGroupDescription}
                         setNewGroupDescription={setNewGroupDescription}
                         onAddGroup={handleAddGroup}
-                        onCancel={() => setIsAddGroupOpen(false)}
+                        onCancel={handleCancelAddGroup}
+                        handleImageChange={handleImageChange}
+                        previewImage={previewImage}
                     />
                 )}
 

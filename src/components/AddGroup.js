@@ -1,7 +1,15 @@
 import React from 'react';
 
 
-const AddGroup = ({ newGroupName, setNewGroupName, newGroupDescription, setNewGroupDescription, onAddGroup, onCancel }) => (
+const AddGroup = ({     
+    newGroupName,
+    setNewGroupName,
+    newGroupDescription,
+    setNewGroupDescription,
+    onAddGroup,
+    onCancel,
+    handleImageChange,
+    previewImage }) => (
     <div className="w-full max-w-7xl mb-8 p-6 bg-white rounded-xl shadow-md border border-gray-200">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Thêm Nhóm Mới</h2>
         <div className="flex flex-col gap-4">
@@ -10,7 +18,7 @@ const AddGroup = ({ newGroupName, setNewGroupName, newGroupDescription, setNewGr
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
                 placeholder="Nhập tên nhóm, ví dụ: Vườn Sau Nhà"
-                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-green-50/50"
+                className="w-full p-2 border rounded mb-4"
             />
             <textarea
                 value={newGroupDescription}
@@ -19,6 +27,26 @@ const AddGroup = ({ newGroupName, setNewGroupName, newGroupDescription, setNewGr
                 className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-green-50/50"
                 rows="3"
             />
+             <div className="col-span-2 flex items-center space-x-6">
+                <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="w-20 h-20 rounded-full border-2 border-gray-200 object-cover"
+                />
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    id="group-image-upload"
+                    className="hidden"
+                />
+                <label
+                    htmlFor="group-image-upload"
+                    className="cursor-pointer bg-green-500 text-white px-5 py-2 rounded-lg hover:bg-green-600 transition text-sm font-semibold"
+                >
+                    Cập nhật
+                </label>
+            </div>
             <div className="flex gap-4">
                 <button
                     onClick={onAddGroup}

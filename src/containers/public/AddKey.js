@@ -5,7 +5,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-const AddDevice = () => {
+const AddKey = () => {
     const [key, setKey] = useState('');
     const [userId, setUserId] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -172,4 +172,4 @@ const AddDevice = () => {
     );
 };
 
-export default AddDevice;
+export default AddKey;

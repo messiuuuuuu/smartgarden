@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ref, onValue, set, push, remove } from 'firebase/database';
+import { ref, onValue, set, update } from 'firebase/database';
 import { realtimedb, auth } from '../../firebaseConfig';
 import { DeviceInfo, MoistureControl, PumpControl, HistoryChart, Settings} from '../../components';
 import Swal from 'sweetalert2';
+import a from '../../assets/1.jpg'; // default image
 
 const DeviceId = () => {
     const { deviceId } = useParams();
@@ -17,19 +18,38 @@ const DeviceId = () => {
     const [editingName, setEditingName] = useState(false);
     const [newDeviceName, setNewDeviceName] = useState('');
     const [groupId, setGroupId] = useState(null);
+    const [newImageFile, setNewImageFile] = useState(null);
+    const [previewImage, setPreviewImage] = useState(a);
 
     useEffect(() => {
         if (!deviceId) return;
 
-        const moistureRef = ref(realtimedb, `devices/${deviceId}/doAmDat`);
-        const pumpStatusRef = ref(realtimedb, `devices/${deviceId}/mayBom/trangThai`);
-        const historyRef = ref(realtimedb, `devices/${deviceId}/doAmDat/history`);
-        const nameRef = ref(realtimedb, `devices/${deviceId}/name`);
-        const setRef = ref(realtimedb, `devices/${deviceId}/doAmDat/set`);
-        const timeRef = ref(realtimedb, `devices/${deviceId}/time`);
+        const deviceRef = ref(realtimedb, `devices/${deviceId}`);
+
+        onValue(deviceRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                setSoilMoisture(data.doAmDat?.current || 0);
+                setPumpStatus(data.mayBom?.trangThai || 0);
+                setDeviceName(data.name || '');
+                setNewDeviceName(data.name || '');
+                setSetMoisture(data.doAmDat?.set || '');
+                setTime(data.time || '');
+                setPreviewImage(data.imageUrl || a);
+                
+                const history = data.doAmDat?.history;
+                if (history) {
+                    const historyArray = Object.keys(history).map((key) => ({
+                        time: new Date(history[key].time).getTime(),
+                        value: parseFloat(history[key].value),
+                    }));
+                    setHistoryData(historyArray);
+                }
+            }
+        });
 
         const usersRef = ref(realtimedb, 'users');
-        const unsubscribeUsers = onValue(usersRef, (snapshot) => {
+        onValue(usersRef, (snapshot) => {
             const usersData = snapshot.val();
             let foundGroupId = null;
             if (usersData) {
@@ -48,29 +68,16 @@ const DeviceId = () => {
                 }
             }
             setGroupId(foundGroupId);
-        }, { onlyOnce: true });
-
-        onValue(nameRef, (snapshot) => {
-            const name = snapshot.val();
-            setDeviceName(name || '');
-            setNewDeviceName(name || '');
         });
-        onValue(moistureRef, (snapshot) => setSoilMoisture(snapshot.val()?.current || 0));
-        onValue(pumpStatusRef, (snapshot) => setPumpStatus(snapshot.val() || 0));
-        onValue(historyRef, (snapshot) => {
-            const history = snapshot.val();
-            if (history) {
-                const historyArray = Object.keys(history).map((key) => ({
-                    time: new Date(history[key].time).getTime(),
-                    value: parseFloat(history[key].value),
-                }));
-                setHistoryData(historyArray);
-            }
-        });
-        onValue(setRef, (snapshot) => setSetMoisture(snapshot.val() || ''));
-        onValue(timeRef, (snapshot) => setTime(snapshot.val() || ''));
     }, [deviceId]);
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setNewImageFile(file);
+            setPreviewImage(URL.createObjectURL(file));
+        }
+    };
 
     const handlePumpControl = (status) => {
         const pumpStatusRef = ref(realtimedb, `devices/${deviceId}/mayBom/trangThai`);
@@ -80,26 +87,61 @@ const DeviceId = () => {
     };
 
     const handleEditName = () => setEditingName(true);
-    const handleSaveName = () => {
+    const handleSaveName = async () => {
+        let imageUrl = previewImage;
+        if (newImageFile) {
+            const CLOUD_NAME = process.env.REACT_APP_CLOUD_NAME;
+            const UPLOAD_PRESET = process.env.REACT_APP_UPLOAD_PRESET;
+
+            const formData = new FormData();
+            formData.append('file', newImageFile);
+            formData.append('upload_preset', UPLOAD_PRESET);
+            formData.append('folder', 'device'); 
+
+            try {
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await response.json();
+                if (data.secure_url) {
+                    imageUrl = data.secure_url;
+                } else {
+                    Swal.fire('Lỗi!', 'Lỗi khi tải ảnh lên.', 'error');
+                    return;
+                }
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                Swal.fire('Lỗi!', 'Lỗi khi tải ảnh lên.', 'error');
+                return;
+            }
+        }
+
         Swal.fire({
-            title: 'Lưu Tên Thiết Bị',
-            text: `Bạn có chắc chắn muốn lưu tên thiết bị là "${newDeviceName}"?`,
+            title: 'Lưu Thông Tin',
+            text: `Bạn có chắc chắn muốn lưu thông tin này?`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Lưu',
             cancelButtonText: 'Hủy'
         }).then((result) => {
             if (result.isConfirmed) {
-                const nameRef = ref(realtimedb, `devices/${deviceId}/name`);
-                set(nameRef, newDeviceName)
+                const deviceRef = ref(realtimedb, `devices/${deviceId}`);
+                const updates = {
+                    name: newDeviceName,
+                    imageUrl: imageUrl
+                };
+
+                update(deviceRef, updates)
                     .then(() => {
                         setDeviceName(newDeviceName);
                         setEditingName(false);
-                        Swal.fire('Thành Công', 'Tên thiết bị đã được cập nhật.', 'success');
+                        setNewImageFile(null); 
+                        Swal.fire('Thành Công', 'Thông tin thiết bị đã được cập nhật.', 'success');
                     })
                     .catch((error) => {
-                        console.error("Lỗi khi lưu tên thiết bị:", error);
-                        Swal.fire('Lỗi', 'Đã xảy ra lỗi khi lưu tên thiết bị.', 'error');
+                        console.error("Lỗi khi lưu thông tin:", error);
+                        Swal.fire('Lỗi', 'Đã xảy ra lỗi khi lưu thông tin.', 'error');
                     });
             }
         });
@@ -168,6 +210,8 @@ const DeviceId = () => {
                     handleSaveName={handleSaveName}
                     handleCancelEdit={handleCancelEdit}
                     handleDelete={handleDelete}
+                    handleImageChange={handleImageChange}
+                    previewImage={previewImage}
                 />
 
                 <div className="space-y-8 mt-8">
