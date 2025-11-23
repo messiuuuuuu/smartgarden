@@ -7,7 +7,7 @@ import AddGroup from '../../components/AddGroup';
 import GroupSection from '../../components/GroupSection';
 import UnassignedDevice from '../../components/UnassignedDevice';
 import GardenCard from './GardenCard';
-import anonAvatar from '../../assets/anon-avatar.png';
+import a from '../../assets/1.jpg'; // default image
 import Swal from 'sweetalert2';
 
 const GardenList = () => {
@@ -16,7 +16,7 @@ const GardenList = () => {
     const [newGroupName, setNewGroupName] = useState('');
     const [newGroupDescription, setNewGroupDescription] = useState('');
     const [newImageFile, setNewImageFile] = useState(null);
-    const [previewImage, setPreviewImage] = useState(anonAvatar);
+    const [previewImage, setPreviewImage] = useState(a);
     const [error, setError] = useState(null);
     const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -79,7 +79,7 @@ const GardenList = () => {
         setNewGroupName('');
         setNewGroupDescription('');
         setNewImageFile(null);
-        setPreviewImage(anonAvatar);
+        setPreviewImage(a);
         setError(null);
     };
 
@@ -132,7 +132,7 @@ const GardenList = () => {
         const newGroupData = {
             name: newGroupName,
             description: newGroupDescription,
-            imageUrl: imageUrl || anonAvatar,
+            imageUrl: imageUrl || a,
             createdAt: serverTimestamp(),
             devices: {}
         };

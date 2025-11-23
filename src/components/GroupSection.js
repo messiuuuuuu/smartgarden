@@ -105,11 +105,11 @@
                     {groupDevices.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {groupDevices.map(device => (
-                                <DeviceCard 
-                                key={device.id} 
-                                device={device} 
-                                groupId={groupId} 
-                                onRemove={onRemoveDeviceFromGroup} />
+                                <DeviceCard
+                                    key={device.id}
+                                    device={device}
+                                    onRemove={() => onRemoveDeviceFromGroup(groupId, device.id)}
+                                />
                             ))}
                         </div>
                     ) : (
@@ -123,7 +123,7 @@
                             devices={devices}
                             groups={groups}
                             currentGroupId={groupId}
-                            onAddDeviceToGroup={onAddDeviceToGroup}
+                            onAddDeviceToGroup={(deviceId) => onAddDeviceToGroup(groupId, deviceId)}
                         />
                     )}
                 </div>

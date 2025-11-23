@@ -11,7 +11,7 @@ const AddGroup = ({
     handleImageChange,
     previewImage }) => (
     <div className="w-full max-w-7xl mb-8 p-6 bg-white rounded-xl shadow-md border border-gray-200">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Thêm Nhóm Mới</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Thêm Khu Vườn Mới</h2>
         <div className="flex flex-col gap-4">
             <input
                 type="text"

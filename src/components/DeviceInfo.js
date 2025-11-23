@@ -35,7 +35,7 @@ const DeviceInfo = ({
                             type="text" 
                             value={newDeviceName}
                             onChange={(e) => setNewDeviceName(e.target.value)}
-                            className="text-2xl font-bold text-gray-800 bg-white border-2 border-green-300 rounded-lg px-3 py-1 text-center w-full md:w-auto"
+                                className="w-full text-2xl font-bold p-2 border rounded mb-4"
                         />
                         <div className="flex gap-3">
                             <button onClick={handleSaveName} className="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-600 transition">Lưu</button>
@@ -48,9 +48,6 @@ const DeviceInfo = ({
                         <div className="flex items-center">
                             <button onClick={handleEditName} className="text-green-600 hover:text-green-800 p-2">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"></path></svg>
-                            </button>
-                            <button onClick={handleDelete} className="text-red-600 hover:text-red-800 p-2">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4h4M3 7h18"></path></svg>
                             </button>
                         </div>
                     </div>
