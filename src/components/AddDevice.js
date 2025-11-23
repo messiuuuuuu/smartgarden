@@ -34,7 +34,7 @@ const AddDevice = ({ groupId, devices, groups, onAddDeviceToGroup }) => {
                 </button>
             </div>
             {unassignedDevices.length === 0 && (
-                 <p className="text-center text-gray-500 mt-4">Tất cả các thiết bị đã được thêm vào một khu vườn.</p>
+                 <p className="text-center text-gray-500 mt-4">Tất cả các thiết bị đã được thêm.</p>
             )}
         </div>
     );

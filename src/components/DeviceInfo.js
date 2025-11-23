@@ -8,7 +8,6 @@ const DeviceInfo = ({
     handleEditName, 
     handleSaveName, 
     handleCancelEdit, 
-    handleDelete, 
     handleImageChange, 
     previewImage 
 }) => {

@@ -338,6 +338,7 @@ const GardenList = () => {
                                         group={group}
                                         groupId={groupId}
                                         onSelectGroup={handleSelectGroup}
+                                        onDeleteGroup={handleDeleteGroup}
                                         isSelected={selectedGroupId === groupId}
                                     />
                                 ))

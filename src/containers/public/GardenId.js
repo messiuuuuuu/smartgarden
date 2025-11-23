@@ -117,15 +117,6 @@ const DeviceId = () => {
             }
         }
 
-        Swal.fire({
-            title: 'Lưu Thông Tin',
-            text: `Bạn có chắc chắn muốn lưu thông tin này?`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Lưu',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
                 const deviceRef = ref(realtimedb, `devices/${deviceId}`);
                 const updates = {
                     name: newDeviceName,
@@ -143,8 +134,7 @@ const DeviceId = () => {
                         console.error("Lỗi khi lưu thông tin:", error);
                         Swal.fire('Lỗi', 'Đã xảy ra lỗi khi lưu thông tin.', 'error');
                     });
-            }
-        });
+            
     };
     const handleCancelEdit = () => {
         setNewDeviceName(deviceName);
