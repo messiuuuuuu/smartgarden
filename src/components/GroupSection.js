@@ -1,28 +1,17 @@
 import React, { useState } from 'react';
 import AddDevice from './AddDevice';
-import DeviceCard from './DeviceCard';
+import GroupForm from './GroupForm'; 
+import InfoCard from './InfoCard'; // Thay thế DeviceCard
 
 const GroupSection = ({ group, groupId, devices, groups, onAddDeviceToGroup, onRemoveDeviceFromGroup, onUpdateGroupInfo }) => {
     const [isAddDeviceModalOpen, setAddDeviceModalOpen] = useState(false);
-    const [isRenameModalOpen, setRenameModalOpen] = useState(false);
-    const [newGroupName, setNewGroupName] = useState(group.name);
-    const [newGroupDescription, setNewGroupDescription] = useState(group.description || '');
-    const [newImageFile, setNewImageFile] = useState(null);
-    const [previewImage, setPreviewImage] = useState(group.imageUrl);
+    const [isEditFormOpen, setEditFormOpen] = useState(false); 
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setNewImageFile(file);
-            setPreviewImage(URL.createObjectURL(file));
+    const handleUpdateGroup = ({ name, description, image }) => {
+        if (name) {
+            onUpdateGroupInfo(groupId, name, description, image);
         }
-    };
-
-    const handleRename = () => {
-        if (newGroupName) {
-            onUpdateGroupInfo(groupId, newGroupName, newGroupDescription, newImageFile);
-        }
-        setRenameModalOpen(false);
+        setEditFormOpen(false); 
     };
 
     const groupDevices = Object.keys(group.devices || {}).map(deviceId => {
@@ -31,7 +20,7 @@ const GroupSection = ({ group, groupId, devices, groups, onAddDeviceToGroup, onR
 
     const handleAddDeviceAndCloseModal = (deviceId) => {
         onAddDeviceToGroup(groupId, deviceId);
-        setAddDeviceModalOpen(false); // Close modal after adding
+        setAddDeviceModalOpen(false); 
     };
 
     return (
@@ -39,48 +28,18 @@ const GroupSection = ({ group, groupId, devices, groups, onAddDeviceToGroup, onR
             <div className="flex justify-between items-start">
                 <h2 className="text-3xl font-bold text-gray-800">{group.name}</h2>
                 <div className="flex items-center space-x-2">
-                    <button onClick={() => setRenameModalOpen(true)} className="text-gray-500 hover:text-green-600 p-2">
+                    <button onClick={() => setEditFormOpen(true)} className="text-gray-500 hover:text-green-600 p-2">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"></path></svg>
                     </button>
                 </div>
             </div>
 
-            {isRenameModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-                        <h3 className="text-xl font-semibold mb-4">Chỉnh sửa thông tin</h3>
-                        <input
-                            type="text"
-                            value={newGroupName}
-                            onChange={(e) => setNewGroupName(e.target.value)}
-                            className="w-full p-2 border rounded mb-4"
-                        />
-                        <textarea
-                            value={newGroupDescription}
-                            onChange={(e) => setNewGroupDescription(e.target.value)}
-                            className="w-full p-2 border rounded mb-4"
-                            rows="3"
-                            placeholder="Mô tả khu vườn"
-                        />
-                        <div className="mt-4">
-                            <label className="block font-medium text-gray-700">Ảnh khu vườn</label>
-                            <div className="mt-1 flex items-center">
-                                <span className="inline-block h-20 w-20 rounded-full overflow-hidden bg-gray-100">
-                                    <img className="h-full w-full object-cover" src={previewImage} alt="Garden" />
-                                </span>
-                                <label htmlFor="file-upload" className="ml-5 cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">
-                                    <span>Thay đổi</span>
-                                    <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={handleImageChange} accept="image/*" />
-                                </label>
-                            </div>
-                        </div>
-                        <div className="flex justify-end mt-6">
-                            <button onClick={() => setRenameModalOpen(false)} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg mr-2 hover:bg-gray-300">Hủy</button>
-                            <button onClick={handleRename} className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Lưu</button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <GroupForm 
+                isOpen={isEditFormOpen}
+                onClose={() => setEditFormOpen(false)}
+                onSave={handleUpdateGroup}
+                initialData={group}
+            />
 
             <p className="text-gray-600 mt-2 italic">{group.description || 'Chưa có mô tả'}</p>
 
@@ -101,10 +60,11 @@ const GroupSection = ({ group, groupId, devices, groups, onAddDeviceToGroup, onR
                 {groupDevices.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {groupDevices.map(device => (
-                            <DeviceCard
+                            <InfoCard
                                 key={device.id}
-                                device={device}
-                                onRemove={() => onRemoveDeviceFromGroup(groupId, device.id)}
+                                item={device}
+                                type="device"
+                                onDelete={() => onRemoveDeviceFromGroup(groupId, device.id)}
                             />
                         ))}
                     </div>

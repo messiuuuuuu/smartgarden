@@ -1,5 +1,5 @@
 import React from 'react';
-import GardenCard from './GardenCard';
+import GardenCard from '../../components/GardenCard';
 
 const GardenGrid = ({ groups, onSelectGroup, selectedGroupId }) => {
     if (Object.keys(groups).length === 0) {
