@@ -6,7 +6,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import GroupForm from '../../components/GroupForm';
 import GroupSection from '../../components/GroupSection';
 import UnassignedDevice from '../../components/UnassignedDevice';
-import InfoCard from '../../components/InfoCard'; // Thay thế GardenCard
+import InfoCard from '../../components/InfoCard';
 import a from '../../assets/1.jpg';
 import Swal from 'sweetalert2';
 
@@ -17,7 +17,7 @@ const GardenList = () => {
     const [isAddFormOpen, setAddFormOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const gardensPerPage = 9;
+    const gardensPerPage = 12;
 
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -214,7 +214,7 @@ const GardenList = () => {
                     />
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                             {currentGardens.map(([groupId, group]) => (
                                 <InfoCard
                                     key={groupId}

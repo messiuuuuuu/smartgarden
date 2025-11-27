@@ -1,185 +1,162 @@
-import React, { useState } from "react";
-import { FaLeaf, FaImage } from "react-icons/fa";
-import { GoogleGenerativeAI} from "@google/generative-ai";
+
+import React, { useState, useCallback } from "react";
+import { useDropzone } from 'react-dropzone';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import Markdown from 'react-markdown';
-import botAvatar from '../../assets/bot-avatar.png'; 
+import { FaImage, FaLeaf, FaStethoscope } from "react-icons/fa";
+import botAvatar from '../../assets/bot-avatar.png';
 import { Loading } from "../../components";
 
 const fileToBase64 = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(',')[1]); // Lấy phần base64
-    reader.onerror = (error) => reject(error);
-    reader.readAsDataURL(file);
-  });
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+    });
 };
 
 const Chatbot = () => {
-  const [messages, setMessages] = useState([
-    { text: <Markdown>Xin chào! Tôi là trợ lý vườn thông minh. Hãy tải ảnh cây của bạn để tôi để nhận diện hoặc chẩn đoán bệnh nhé!</Markdown>, sender: "bot" },
-  ]);
-  const [image, setImage] = useState(null);
-  const [loading, setLoading] = useState(false);
+    const [messages, setMessages] = useState([
+        { text: <Markdown>Xin chào! Tôi là trợ lý vườn thông minh. Hãy tải ảnh cây của bạn lên để tôi nhận diện hoặc chẩn đoán bệnh nhé!</Markdown>, sender: "bot" },
+    ]);
+    const [image, setImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [loading, setLoading] = useState(false);
 
-  const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
-  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith("image/")) {
-      setImage(file);
-      setMessages((prev) => [
-        ...prev,
-        { text: "[Hình ảnh]", sender: "user", image: file },
-      ]);
-    } else {
-      setMessages((prev) => [
-        ...prev,
-        { text: <Markdown> Vui lòng chọn file ảnh hợp lệ!</Markdown>, sender: "bot" },
-      ]);
-    }
-  };
-
-  const handlePlantIdentification = async (file, isDiagnosis) => {
-    if (!GEMINI_API_KEY) {
-        setMessages((prev) => [
-            ...prev,
-            { text: <Markdown> Vui lòng cung cấp API key cho Gemini!</Markdown>, sender: "bot" },
-        ]);
-        return;
-    }
-
-    setLoading(true);
-
-    try {
-      const base64Image = await fileToBase64(file);
-      const mimeType = file.type;
-
-      let prompt = "";
-      if (!isDiagnosis) {
-        prompt = `Đây là hình ảnh của một cây. Hãy nhận diện chính xác tên giống cây, sau đó mô tả ngắn gọn và cung cấp thông tin chi tiết về điều kiện trồng tối ưu: điều kiện ánh sáng, loại đất, nhiệt độ, và độ ẩm tốt nhất cho cây. Phản hồi bằng tiếng Việt và sử dụng markdown để định dạng câu trả lời cho đẹp hơn.`;
-      } else {
-        prompt = `Đây là hình ảnh của một cây. Dựa vào hình ảnh, hãy chẩn đoán xem cây có khỏe mạnh không. Nếu có dấu hiệu bệnh, hãy nêu tên bệnh, mô tả triệu chứng và đề xuất phương pháp điều trị/phòng ngừa phù hợp (hóa học, sinh học, hoặc tự nhiên). Phản hồi bằng tiếng Việt và sử dụng markdown để định dạng câu trả lời cho đẹp hơn.`;
-      }
-      
-      const imagePart = {
-        inlineData: {
-          data: base64Image,
-          mimeType
+    const onDrop = useCallback(acceptedFiles => {
+        const file = acceptedFiles[0];
+        if (file && file.type.startsWith("image/")) {
+            setImage(file);
+            setImagePreview(URL.createObjectURL(file));
+            setMessages((prev) => [
+                ...prev,
+                { text: `Đã tải lên ảnh: ${file.name}`, sender: "user" },
+            ]);
         }
-      };
-      
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-      
-      const result = await model.generateContent([prompt, imagePart]);
-      const response = await result.response;
-      const geminiText = response.text();
+    }, []);
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: <Markdown>{geminiText}</Markdown>,
-          sender: "bot",
-        },
-      ]);
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        accept: 'image/*',
+        multiple: false
+    });
 
-    } catch (error) {
-      const errorMessage =
-        error.message || "Không thể kết nối đến server. Vui lòng kiểm tra mạng!";
-      setMessages((prev) => [
-        ...prev,
-        { text: <Markdown> Lỗi: ${errorMessage}. Vui lòng thử lại!</Markdown>, sender: "bot" },
-      ]);
-      console.error("Gemini API error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const handleSendMessage = async (isDiagnosis = false) => {
+        if (!image) {
+            alert("Vui lòng tải lên một hình ảnh trước.");
+            return;
+        }
 
-  const handleButtonClick = (isDiagnosis) => {
-    if (!image) {
-      setMessages((prev) => [
-        ...prev,
-        { text: <Markdown>Vui lòng tải ảnh trước khi thực hiện!</Markdown>, sender: "bot" },
-      ]);
-      return;
-    }
-    handlePlantIdentification(image, isDiagnosis);
-  }
+        setLoading(true);
 
-  return (
-    <div className="flex flex-col h-screen bg-green-50">
-      <div className="bg-white text-green-800 py-4 px-6 text-2xl font-bold flex items-center justify-center gap-3 shadow-sm border-b">
-        <FaLeaf className="text-3xl" />
-        Trợ lý vườn thông minh
-      </div>
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`flex items-start gap-4 ${
-              msg.sender === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
-            {msg.sender === 'bot' && <img src={botAvatar} alt="bot avatar" className="w-10 h-10 rounded-full"/>}
-            <div
-              className={`px-5 py-3 rounded-2xl max-w-3xl shadow-md ${
-                msg.sender === "user"
-                  ? "bg-green-500 text-white"
-                  : "bg-white text-gray-800"
-              }`}
-            >
-              {msg.image ? (
-                <img
-                  src={URL.createObjectURL(msg.image)}
-                  alt="Uploaded"
-                  className="w-48 h-48 rounded-lg shadow-md"
-                />
-              ) : (
-                <div className="prose"><pre className="whitespace-pre-wrap ">{msg.text}</pre></div>
-              )}
+        try {
+            const base64Image = await fileToBase64(image);
+            const mimeType = image.type;
+
+            let prompt = "";
+            if (!isDiagnosis) {
+                prompt = `Đây là hình ảnh của một cây. Hãy làm theo các bước sau:
+1. Nhận diện chính xác tên giống cây.
+2. Ngay sau tên cây, cung cấp 3 thẻ (tags) tóm tắt về đặc điểm của cây, ví dụ: [tag: Cây thân thảo], [tag: Ưa ẩm], [tag: Cần ánh sáng gián tiếp].
+3. Mô tả ngắn gọn về cây.
+4. Cung cấp thông tin chi tiết về "Điều kiện trồng tối ưu" dưới dạng danh sách với các biểu tượng sau:
+   - 💧 *Độ ẩm:* (ghi rõ khoảng an toàn, ví dụ: 60-70%)
+   - 🌡️ *Nhiệt độ:* (ghi rõ khoảng an toàn, ví dụ: 18°C - 25°C)
+   - ☀️ *Ánh sáng:* (ghi rõ yêu cầu, ví dụ: 6-8 giờ/ngày, ánh sáng gián tiếp)
+   - 🌱 *Đất trồng:* (ghi rõ loại đất phù hợp)
+Toàn bộ phản hồi phải bằng tiếng Việt và sử dụng markdown để định dạng.`;
+            } else {
+                prompt = `Đây là hình ảnh của một cây. Dựa vào hình ảnh, hãy chẩn đoán xem cây có khỏe mạnh không. Nếu có dấu hiệu bệnh, hãy nêu tên bệnh, mô tả triệu chứng và đề xuất các phương pháp điều trị/phòng ngừa phù hợp (hóa học, sinh học, hoặc tự nhiên). Phản hồi bằng tiếng Việt và sử dụng markdown để định dạng câu trả lời cho đẹp hơn.`;
+            }
+
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            const result = await model.generateContent([prompt, { inlineData: { data: base64Image, mimeType } }]);
+            const response = await result.response;
+            const text = response.text();
+
+            setMessages((prev) => [...prev, { text: <Markdown>{text}</Markdown>, sender: "bot" }]);
+        } catch (error) {
+            console.error("Lỗi khi gửi tin nhắn:", error);
+            setMessages((prev) => [
+                ...prev,
+                { text: "Rất tiếc, đã có lỗi xảy ra. Vui lòng thử lại.", sender: "bot" },
+            ]);
+        } finally {
+            setLoading(false);
+            setImage(null);
+            setImagePreview(null);
+        }
+    };
+    
+
+    return (
+        <div className="flex h-[calc(100vh-6rem)] bg-gray-50">
+            {/* Chat Area */}
+            <div className="flex-1 flex flex-col p-4">
+                <div className="flex-1 overflow-y-auto bg-white rounded-lg shadow-inner p-4 space-y-4">
+                    {messages.map((msg, index) => (
+                        <div key={index} className={`flex items-start gap-3 ${msg.sender === 'bot' ? '' : 'justify-end'}`}>
+                            {msg.sender === 'bot' && (
+                                <img src={botAvatar} alt="Bot Avatar" className="w-10 h-10 rounded-full" />
+                            )}
+                            <div className={`max-w-lg p-3 rounded-lg shadow ${msg.sender === 'bot' ? 'bg-green-100 text-gray-800' : 'bg-blue-500 text-white'}`}>
+                                <div className="prose prose-sm max-w-none">{msg.text}</div>
+                            </div>
+                        </div>
+                    ))}
+                    {loading && (
+                        <div className="flex flex-col items-center justify-center p-4">
+                            <span className="mt-2 text-gray-600 text-base animate-pulse">
+                              <Loading/> Trợ lý thông minh đang xử lý...
+                            </span>
+                        </div>
+                    )}
+                </div>
             </div>
-          </div>
-        ))}
-        {loading && (
-          <div className="flex justify-center">
-            <span className="text-gray-600 text-base animate-pulse">
-              <Loading/> Trợ lý thông minh đang xử lý...
-            </span>
-          </div>
-        )}
-      </div>
-      <div className="flex justify-center gap-6 p-6 bg-white shadow-inner border-t">
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="hidden"
-          id="upload"
-        />
-        <label
-          htmlFor="upload"
-          className="cursor-pointer bg-gray-100 p-4 rounded-full shadow-md hover:bg-gray-200 transition flex items-center justify-center"
-        >
-          <FaImage className="text-2xl text-gray-600" />
-        </label>
-        <button
-          className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl shadow-md hover:from-green-600 hover:to-green-700  transition disabled:bg-gray-400 text-sm font-semibold"
-          onClick={() => handleButtonClick(false)}
-          disabled={loading}
-        >
-          Nhận diện cây
-        </button>
-        <button
-          className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-gradient-to-r from-teal-600 hover:to-teal-700 transition disabled:bg-gray-400 text-sm font-semibold"
-          onClick={() => handleButtonClick(true)}
-          disabled={loading}
-        >
-          Chẩn đoán bệnh cây
-        </button>
-      </div>
-    </div>
-  );
+
+            {/* Right Panel: Image Upload and Actions */}
+            <div className="w-1/3 flex flex-col p-4 space-y-4">
+                <div 
+                    {...getRootProps()} 
+                    className={`flex-1 border-4 border-dashed rounded-lg transition-colors duration-300 flex justify-center items-center text-center p-4 ${isDragActive ? 'border-green-500 bg-green-50' : 'border-gray-300 hover:border-green-400'}`}
+                >
+                    <input {...getInputProps()} />
+                    {imagePreview ? (
+                        <img src={imagePreview} alt="Xem trước" className="max-h-full max-w-full object-contain rounded-lg" />
+                    ) : (
+                        <div className="text-gray-500">
+                            <FaImage className="mx-auto text-5xl mb-2" />
+                            <p className="font-semibold">Kéo thả ảnh vào đây</p>
+                            <p className="text-sm">hoặc nhấn để chọn ảnh</p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                    <button
+                        onClick={() => handleSendMessage(false)}
+                        disabled={!image || loading}
+                        className="w-full flex items-center justify-center gap-2 p-3 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all"
+                    >
+                        <FaLeaf />
+                        <span>Nhận diện cây</span>
+                    </button>
+                    <button
+                        onClick={() => handleSendMessage(true)}
+                        disabled={!image || loading}
+                        className="w-full flex items-center justify-center gap-2 p-3 bg-white text-green-700 border-2 border-green-700 font-bold rounded-lg shadow-md hover:bg-green-700 hover:text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-300 disabled:cursor-not-allowed transition-all"
+                    >
+                        <FaStethoscope />
+                        <span>Chẩn đoán bệnh</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default Chatbot;
