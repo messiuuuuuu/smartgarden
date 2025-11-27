@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AddDevice from './AddDevice';
 import GroupForm from './GroupForm'; 
-import InfoCard from './InfoCard'; // Thay thế DeviceCard
+import InfoCard from './InfoCard';
 
 const GroupSection = ({ group, groupId, devices, groups, onAddDeviceToGroup, onRemoveDeviceFromGroup, onUpdateGroupInfo }) => {
     const [isAddDeviceModalOpen, setAddDeviceModalOpen] = useState(false);
@@ -25,13 +25,16 @@ const GroupSection = ({ group, groupId, devices, groups, onAddDeviceToGroup, onR
 
     return (
         <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-            <div className="flex justify-between items-start">
+            {/* Tieu de va nut chinh sua */}
+            <div className="flex items-center gap-4 mb-2">
                 <h2 className="text-3xl font-bold text-gray-800">{group.name}</h2>
-                <div className="flex items-center space-x-2">
-                    <button onClick={() => setEditFormOpen(true)} className="text-gray-500 hover:text-green-600 p-2">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"></path></svg>
-                    </button>
-                </div>
+                <button 
+                    onClick={() => setEditFormOpen(true)} 
+                    className="text-gray-500 hover:text-green-600"
+                    title="Chỉnh sửa thông tin khu vườn"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"></path></svg>
+                </button>
             </div>
 
             <GroupForm 
@@ -43,6 +46,7 @@ const GroupSection = ({ group, groupId, devices, groups, onAddDeviceToGroup, onR
 
             <p className="text-gray-600 mt-2 italic">{group.description || 'Chưa có mô tả'}</p>
 
+            {/* Danh sach thiet bi */}
             <div className="mt-8">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-2xl font-semibold text-gray-700">Thiết bị trong khu vườn</h3>

@@ -4,6 +4,7 @@ import { useDropzone } from 'react-dropzone';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Markdown from 'react-markdown';
 import { FaImage, FaLeaf, FaStethoscope } from "react-icons/fa";
+import { IoMdClose } from "react-icons/io";
 import botAvatar from '../../assets/bot-avatar.png';
 import { Loading } from "../../components";
 
@@ -60,15 +61,15 @@ const Chatbot = () => {
             let prompt = "";
             if (!isDiagnosis) {
                 prompt = `Đây là hình ảnh của một cây. Hãy làm theo các bước sau:
-1. Nhận diện chính xác tên giống cây.
-2. Ngay sau tên cây, cung cấp 3 thẻ (tags) tóm tắt về đặc điểm của cây, ví dụ: [tag: Cây thân thảo], [tag: Ưa ẩm], [tag: Cần ánh sáng gián tiếp].
-3. Mô tả ngắn gọn về cây.
-4. Cung cấp thông tin chi tiết về "Điều kiện trồng tối ưu" dưới dạng danh sách với các biểu tượng sau:
-   - 💧 *Độ ẩm:* (ghi rõ khoảng an toàn, ví dụ: 60-70%)
-   - 🌡️ *Nhiệt độ:* (ghi rõ khoảng an toàn, ví dụ: 18°C - 25°C)
-   - ☀️ *Ánh sáng:* (ghi rõ yêu cầu, ví dụ: 6-8 giờ/ngày, ánh sáng gián tiếp)
-   - 🌱 *Đất trồng:* (ghi rõ loại đất phù hợp)
-Toàn bộ phản hồi phải bằng tiếng Việt và sử dụng markdown để định dạng.`;
+                          1. Nhận diện chính xác tên giống cây.
+                          2. Ngay sau tên cây, cung cấp 3 thẻ (tags) tóm tắt về đặc điểm của cây, ví dụ: [tag: Cây thân thảo], [tag: Ưa ẩm], [tag: Cần ánh sáng gián tiếp].
+                          3. Mô tả ngắn gọn về cây.
+                          4. Cung cấp thông tin chi tiết về "Điều kiện trồng tối ưu" dưới dạng danh sách với các biểu tượng sau:
+                            - 💧 *Độ ẩm:* (ghi rõ khoảng an toàn, ví dụ: 60-70%)
+                            - 🌡️ *Nhiệt độ:* (ghi rõ khoảng an toàn, ví dụ: 18°C - 25°C)
+                            - ☀️ *Ánh sáng:* (ghi rõ yêu cầu, ví dụ: 6-8 giờ/ngày, ánh sáng gián tiếp)
+                            - 🌱 *Đất trồng:* (ghi rõ loại đất phù hợp)
+                          Toàn bộ phản hồi phải bằng tiếng Việt và sử dụng markdown để định dạng.`;
             } else {
                 prompt = `Đây là hình ảnh của một cây. Dựa vào hình ảnh, hãy chẩn đoán xem cây có khỏe mạnh không. Nếu có dấu hiệu bệnh, hãy nêu tên bệnh, mô tả triệu chứng và đề xuất các phương pháp điều trị/phòng ngừa phù hợp (hóa học, sinh học, hoặc tự nhiên). Phản hồi bằng tiếng Việt và sử dụng markdown để định dạng câu trả lời cho đẹp hơn.`;
             }
@@ -87,9 +88,13 @@ Toàn bộ phản hồi phải bằng tiếng Việt và sử dụng markdown đ
             ]);
         } finally {
             setLoading(false);
-            setImage(null);
-            setImagePreview(null);
         }
+    };
+
+    const handleRemoveImage = (e) => {
+        e.stopPropagation();
+        setImage(null);
+        setImagePreview(null);
     };
     
 
@@ -122,11 +127,19 @@ Toàn bộ phản hồi phải bằng tiếng Việt và sử dụng markdown đ
             <div className="w-1/3 flex flex-col p-4 space-y-4">
                 <div 
                     {...getRootProps()} 
-                    className={`flex-1 border-4 border-dashed rounded-lg transition-colors duration-300 flex justify-center items-center text-center p-4 ${isDragActive ? 'border-green-500 bg-green-50' : 'border-gray-300 hover:border-green-400'}`}
+                    className={`relative flex-1 border-4 border-dashed rounded-lg transition-colors duration-300 flex justify-center items-center text-center p-4 ${isDragActive ? 'border-green-500 bg-green-50' : 'border-gray-300 hover:border-green-400'}`}
                 >
                     <input {...getInputProps()} />
                     {imagePreview ? (
-                        <img src={imagePreview} alt="Xem trước" className="max-h-full max-w-full object-contain rounded-lg" />
+                        <>
+                            <img src={imagePreview} alt="Xem trước" className="max-h-full max-w-full object-contain rounded-lg" />
+                            <button
+                                onClick={handleRemoveImage}
+                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none"
+                            >
+                                <IoMdClose size={20} />
+                            </button>
+                        </>
                     ) : (
                         <div className="text-gray-500">
                             <FaImage className="mx-auto text-5xl mb-2" />

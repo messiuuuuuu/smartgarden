@@ -59,7 +59,7 @@ const GroupForm = ({ isOpen, onClose, onSave, initialData }) => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Nhập tên khu vườn"
-                    className="w-full p-2 border border-gray-300 rounded-md bg-white mt-1 text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full p-2 border border-gray-300 rounded-md bg-white mt-1 text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder-gray-500"
                 />
                 </div>
                 <div className="mb-4">

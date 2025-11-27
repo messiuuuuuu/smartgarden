@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ref, onValue, set, update } from 'firebase/database';
 import { realtimedb, auth } from '../../firebaseConfig';
 import { DeviceInfo, MoistureControl, PumpControl, HistoryChart, Settings} from '../../components';
+import { FaArrowLeft } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import a from '../../assets/1.jpg'; // default image
 
@@ -187,9 +188,10 @@ const DeviceId = () => {
             <div className="relative bg-green-100 shadow-2xl rounded-2xl w-full max-w-4xl p-8 transform transition-all hover:scale-[1.01]">
                 <button
                     onClick={() => navigate(groupId ? `/devices?group=${groupId}` : '/devices')}
-                    className="absolute top-8 left-8 bg-gray-500 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-gray-600 transition-all duration-300 flex items-center gap-2 z-10"
-                >
-                    Trở về khu vườn
+                    className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 font-semibold transition-colors"
+                        >
+                    <FaArrowLeft />
+                    <span>Trở về khu vườn</span>
                 </button>
                 <DeviceInfo
                     deviceName={deviceName}

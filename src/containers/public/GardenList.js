@@ -3,6 +3,7 @@ import { ref, onValue, set, update, remove, push, serverTimestamp } from 'fireba
 import { realtimedb, auth } from '../../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { FaArrowLeft } from 'react-icons/fa';
 import GroupForm from '../../components/GroupForm';
 import GroupSection from '../../components/GroupSection';
 import UnassignedDevice from '../../components/UnassignedDevice';
@@ -178,14 +179,20 @@ const GardenList = () => {
         <div className="min-h-screen bg-green-50 px-4 sm:px-6 lg:px-8 py-8">
             <div className="w-full max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-4xl font-bold text-green-600">
-                        {selectedGroup ? selectedGroup.name : "Danh Sách Khu Vườn"}
-                    </h1>
                     {selectedGroupId ? (
-                        <button onClick={() => setSearchParams({})} className="bg-gray-500 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-gray-600">
-                            Quay lại danh sách
+                        <button 
+                            onClick={() => setSearchParams({})} 
+                            className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 font-semibold transition-colors"
+                        >
+                            <FaArrowLeft />
+                            <span>Quay lại danh sách</span>
                         </button>
                     ) : (
+                        <h1 className="text-4xl font-bold text-green-600">
+                            Danh Sách Khu Vườn
+                        </h1>
+                    )}
+                    {!selectedGroupId && (
                         <button onClick={() => setAddFormOpen(true)} className="bg-green-500 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-green-600">
                            + Thêm Khu Vườn Mới
                         </button>

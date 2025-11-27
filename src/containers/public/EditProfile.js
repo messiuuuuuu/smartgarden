@@ -1,47 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ref, onValue, update } from 'firebase/database';
-import { auth, realtimedb } from '../../firebaseConfig';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import anonAvatar from '../../assets/anon-avatar.png';
+import { ref, onValue, update } from 'firebase/database';
+import { useNavigate } from 'react-router-dom';
+import { auth, realtimedb } from '../../firebaseConfig';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { FaCamera } from 'react-icons/fa';
 import Swal from 'sweetalert2';
+import anonAvatar from '../../assets/anon-avatar.png';
 
 const EditProfile = () => {
-    const navigate = useNavigate();
     const [user, setUser] = useState(null);
-    const [displayName, setDisplayName] = useState('');
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [avatar, setAvatar] = useState('');
+    const [avatar, setAvatar] = useState(anonAvatar);
     const [newAvatarFile, setNewAvatarFile] = useState(null);
-    const [previewAvatar, setPreviewAvatar] = useState('');
     const [isUploading, setIsUploading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             if (currentUser) {
-                setUser(currentUser);
-                setEmail(currentUser.email);
                 const userRef = ref(realtimedb, `users/${currentUser.uid}`);
                 onValue(userRef, (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
-                        setDisplayName(data.displayName || '');
-                        setAvatar(data.avatar || '');
-                        setPreviewAvatar(data.avatar || anonAvatar);
+                        setUser({ uid: currentUser.uid, ...data });
+                        setName(data.displayName || '');
+                        setEmail(currentUser.email);
+                        setAvatar(data.avatar || anonAvatar);
                     }
+                    setLoading(false);
                 });
             } else {
                 navigate('/login');
             }
         });
+
         return () => unsubscribe();
     }, [navigate]);
 
     const handleAvatarChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
+        if (e.target.files[0]) {
+            const file = e.target.files[0];
             setNewAvatarFile(file);
-            setPreviewAvatar(URL.createObjectURL(file));
+            setAvatar(URL.createObjectURL(file));
         }
     };
 
@@ -49,7 +54,7 @@ const EditProfile = () => {
         if (!user) return;
 
         setIsUploading(true);
-        let avatarUrl = avatar;
+        let avatarUrl = user.avatar;
 
         if (newAvatarFile) {
             const CLOUD_NAME = process.env.REACT_APP_CLOUD_NAME;
@@ -79,111 +84,104 @@ const EditProfile = () => {
             }
         }
 
-        const userRef = ref(realtimedb, `users/${user.uid}`);
-        update(userRef, {
-            displayName: displayName,
+        const updates = {
+            displayName: name,
             avatar: avatarUrl,
-        }).then(() => {
-            Swal.fire('Thành công!', 'Cập nhật thông tin thành công!', 'success');
-            setIsUploading(false);
-            navigate(-1);
-        }).catch((error) => {
-            console.error('Error updating profile:', error);
-            Swal.fire('Lỗi!', 'Lỗi khi cập nhật thông tin.', 'error');
-            setIsUploading(false);
-        });
+        };
+
+        const userRef = ref(realtimedb, `users/${user.uid}`);
+        update(userRef, updates)
+            .then(() => {
+                Swal.fire('Thành công', 'Thông tin cá nhân đã được cập nhật.', 'success');
+            })
+            .catch((error) => {
+                console.error("Lỗi cập nhật thông tin:", error);
+                Swal.fire('Lỗi', 'Không thể cập nhật thông tin. Vui lòng thử lại.', 'error');
+            })
+            .finally(() => {
+                setIsUploading(false);
+            });
     };
 
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="text-xl font-semibold">Đang tải...</div>
+            </div>
+        );
+    }
+
     return (
-        <div className="flex-grow flex items-center justify-center bg-gray-50">
-            <div className="bg-white shadow-xl rounded-2xl w-full max-w-4xl p-8 m-4">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800">Quản lý tài khoản</h1>
-                    <p className="text-gray-500 mt-1">Quản lý thông tin cá nhân của bạn.</p>
-                </div>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
+                <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">Chỉnh Sửa Thông Tin Cá Nhân</h1>
 
-                <div className="border-t border-gray-200 pt-8">
-                    <div className="flex justify-between items-start mb-6">
-                        <div>
-                            <h2 className="text-2xl font-semibold text-gray-800">Thông tin cá nhân</h2>
-                            <p className="text-gray-500 mt-1">Cập nhật ảnh và thông tin chi tiết cá nhân của bạn tại đây.</p>
-                        </div>
-                    </div>
-
-                    <div className="mt-8 divide-y divide-gray-200">
-                        <div className="py-8 grid grid-cols-3 gap-6 items-center">
-                            <div className="col-span-1">
-                                <span className="text-gray-700 font-medium">Ảnh đại diện</span>
-                            </div>
-                            <div className="col-span-2 flex items-center space-x-6">
-                                <img
-                                    src={previewAvatar}
-                                    alt="Avatar Preview"
-                                    className="w-20 h-20 rounded-full border-2 border-gray-200 object-cover"
-                                />
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleAvatarChange}
-                                    id="avatar-upload"
-                                    className="hidden"
-                                />
-                                <label
-                                    htmlFor="avatar-upload"
-                                    className="cursor-pointer bg-green-500 text-white px-5 py-2 rounded-lg hover:bg-green-600 transition text-sm font-semibold"
-                                >
-                                    Cập nhật
-                                </label>
-                            </div>
-                        </div>
-
-                        <div className="py-8 grid grid-cols-3 gap-6 items-center">
-                             <div className="col-span-1">
-                                <label htmlFor="displayName" className="text-gray-700 font-medium">Họ và tên</label>
-                            </div>
-                            <div className="col-span-2">
-                                <input
-                                    type="text"
-                                    id="displayName"
-                                    placeholder="Nhập họ và tên"
-                                    value={displayName}
-                                    onChange={(e) => setDisplayName(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="py-8 grid grid-cols-3 gap-6 items-center">
-                            <div className="col-span-1">
-                                <label htmlFor="email" className="text-gray-700 font-medium">Địa chỉ Email</label>
-                            </div>
-                            <div className="col-span-2">
-                                <input
-                                    type="email"
-                                    id="email"
-                                    value={email}
-                                    readOnly
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed text-gray-700 focus:outline-none focus:ring-0"
-                                />
-                                 <p className="text-xs text-gray-500 mt-1">Email không thể thay đổi.</p>
-                            </div>
-                        </div>
+                {/* Avatar Section */}
+                <div className="flex flex-col items-center gap-4 mb-8">
+                    <div className="relative w-32 h-32">
+                        <img
+                            src={avatar}
+                            alt="Avatar"
+                            className="w-full h-full rounded-full object-cover border-4 border-gray-200"
+                        />
+                        <button
+                            onClick={() => fileInputRef.current.click()}
+                            className="absolute bottom-0 right-0 bg-green-600 text-white p-2 rounded-full hover:bg-green-700 transform hover:scale-110 transition-all duration-300 shadow-md"
+                            aria-label="Thay đổi ảnh đại diện"
+                        >
+                            <FaCamera />
+                        </button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleAvatarChange}
+                            accept="image/*"
+                            className="hidden"
+                        />
                     </div>
                 </div>
-                <div className="flex gap-10 justify-center">
-                            <button
-                                onClick={() => navigate(-1)}
-                                className="py-2 px-6 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition"
-                            >
-                                Hủy
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                disabled={isUploading}
-                                className="py-2 px-6 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition disabled:bg-gray-400"
-                            >
-                                {isUploading ? 'Đang lưu...' : 'Lưu thay đổi'}
-                            </button>
+
+                {/* Form Fields */}
+                <div className="space-y-6">
+                    <div>
+                        <label htmlFor="name" className="block text-lg font-semibold text-gray-700 mb-2">Họ và tên</label>
+                        <input
+                            id="name"
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md bg-white mt-1 text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder-gray-500"
+                            placeholder="Nhập họ và tên của bạn"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="email" className="block text-lg font-semibold text-gray-700 mb-2">Địa chỉ Email</label>
+                        <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            disabled
+                            className="w-full p-2 border border-gray-300 rounded-md bg-white mt-1 text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-not-allowed"
+                        />
+                    </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-4 justify-center mt-10">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="py-2 px-8 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition"
+                    >
+                        Hủy
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={isUploading}
+                        className="py-2 px-8 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition disabled:bg-gray-400"
+                    >
+                        {isUploading ? 'Đang lưu...' : 'Lưu thay đổi'}
+                    </button>
                 </div>
             </div>
         </div>
