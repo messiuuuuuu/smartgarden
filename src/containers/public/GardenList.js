@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ref, onValue, set, update, remove, push, serverTimestamp } from 'firebase/database';
 import { realtimedb, auth } from '../../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -19,6 +19,9 @@ const GardenList = () => {
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const gardensPerPage = 12;
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortOrder, setSortOrder] = useState('newest');
 
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -169,9 +172,32 @@ const GardenList = () => {
 
     const handleSelectGroup = (groupId) => setSearchParams({ group: groupId });
 
+    const filteredAndSortedGardens = useMemo(() => {
+        let gardenArray = Object.entries(groups);
+        if (searchTerm) {
+            gardenArray = gardenArray.filter(([id, group]) =>
+                group.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+        gardenArray.sort(([idA, a], [idB, b]) => {
+            switch (sortOrder) {
+                case 'mostDevices':
+                    const aCount = a.devices ? Object.keys(a.devices).length : 0;
+                    const bCount = b.devices ? Object.keys(b.devices).length : 0;
+                    return bCount - aCount;
+                case 'nameAZ':
+                    return a.name.localeCompare(b.name);
+                case 'newest':
+                default:
+                    return b.createdAt - a.createdAt;
+            }
+        });
+        return gardenArray;
+    }, [groups, searchTerm, sortOrder]);
+
     const indexOfLastGarden = currentPage * gardensPerPage;
     const indexOfFirstGarden = indexOfLastGarden - gardensPerPage;
-    const currentGardens = Object.entries(groups).slice(indexOfFirstGarden, indexOfLastGarden);
+    const currentGardens = filteredAndSortedGardens.slice(indexOfFirstGarden, indexOfLastGarden);
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
     const selectedGroup = selectedGroupId ? groups[selectedGroupId] : null;
 
@@ -221,6 +247,30 @@ const GardenList = () => {
                     />
                 ) : (
                     <>
+                        <div className="mb-6 p-4 bg-white rounded-lg shadow-sm flex flex-col md:flex-row gap-4 items-center">
+                            <div className="relative flex-grow w-full">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" /></svg>
+                                </span>
+                                <input
+                                    type="text"
+                                    placeholder="Tìm kiếm khu vườn..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md bg-white mt-1 text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder-gray-500"
+                                />
+                            </div>
+                            <select
+                                value={sortOrder}
+                                onChange={(e) => setSortOrder(e.target.value)}
+                                className="w-full md:w-auto px-4 py-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                            >
+                                <option value="newest">Sắp xếp: Mới nhất</option>
+                                <option value="mostDevices">Sắp xếp: Nhiều thiết bị nhất</option>
+                                <option value="nameAZ">Sắp xếp: Tên A-Z</option>
+                            </select>
+                        </div>
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                             {currentGardens.map(([groupId, group]) => (
                                 <InfoCard
@@ -234,9 +284,9 @@ const GardenList = () => {
                             ))}
                         </div>
                         
-                        {Object.keys(groups).length > gardensPerPage && (
+                        {filteredAndSortedGardens.length > gardensPerPage && (
                             <div className="flex justify-center mt-8">
-                                {Array.from({ length: Math.ceil(Object.keys(groups).length / gardensPerPage) }, (_, i) => (
+                                {Array.from({ length: Math.ceil(filteredAndSortedGardens.length / gardensPerPage) }, (_, i) => (
                                     <button
                                         key={i}
                                         onClick={() => paginate(i + 1)}
@@ -247,9 +297,7 @@ const GardenList = () => {
                             </div>
                         )}
 
-                        <div className="mt-12">
-                          <UnassignedDevice devices={devices} groups={groups} />
-                        </div>
+                        <UnassignedDevice devices={devices} groups={groups} />
                     </>
                 )}
             </div>
